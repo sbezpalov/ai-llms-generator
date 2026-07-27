@@ -44,8 +44,13 @@ Suite не обещает индексацию, цитирование, попа
 
 ## 4. Статус / текущий приоритет
 
-Вариант A: multi-skill AIO suite + Wave 0 (spec llmstxt.org, curated vs dump,
-robots-comment truth). Дальше по спросу — CLI linter (вариант B).
+**Harden for public release** выполнен в `main` (`fa45cb6`, 2026-07-27):
+guardrails fetch, honest outcome-limits, safe installer + CI matrix,
+PROMPT.en, issue/PR templates, усиленный `check_package.py`.
+
+Variant A (multi-skill suite) + Wave 0 — закрыты. CHANGELOG пока в
+**Unreleased** — следующий шаг релиза: semver tag `0.1.0` и GitHub Release.
+Дальше по продукту — CLI linter (вариант B) по спросу.
 
 ## 5. Как вносить изменения (агент)
 

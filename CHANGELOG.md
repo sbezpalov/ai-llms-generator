@@ -7,12 +7,19 @@ changes remain under **Unreleased**.
 
 ## Unreleased
 
+Public-release harden landed on `main` (2026-07-27, commit message
+`Harden AIO suite for public release`). Ready to cut **v0.1.0** when tagging.
+
 ### Added
 
+- AIO skill suite: `aio-site-audit`, `generate-llms-txt`, `audit-robots-ai-bots`,
+  `draft-json-ld` (templates + installer)
 - English standalone prompt (`PROMPT.en.md`)
 - Network and prompt-injection guardrails for every website-fetching skill
 - Safe installer dry-run, overwrite refusal, forced-update backups, and
   cross-platform installer smoke tests
+- GitHub issue / PR templates, `CHANGELOG.md`, synthetic
+  `examples/aio-audit-report.md`
 - Explicit compatibility and outcome-limit documentation
 
 ### Changed
@@ -22,6 +29,8 @@ changes remain under **Unreleased**.
   user-triggered fetchers
 - `llms.txt` size and section counts are documented as curation heuristics
 - Schema.org validation guidance is separated from Google Rich Results support
+- README / AGENTS positioned as experimental artifact suite (no SEO/AI ranking
+  promises)
 
 ### Security
 
