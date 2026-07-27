@@ -35,7 +35,8 @@ Suite не обещает индексацию, цитирование, попа
 | `skills/aio-site-audit/` | Оркестратор трёх слоёв |
 | `skills/audit-robots-ai-bots/` | Слой 1 — AI bots / robots.txt |
 | `skills/draft-json-ld/` | Слой 3 — Schema.org + `templates/*.json` |
-| `examples/` | Синтетические golden-форматы выдачи |
+| `examples/` | Golden report format + Rank Math-style dump antipattern |
+| `docs/replace-rank-math-llms.md` | Как заменить plugin dump на curated `/llms.txt` |
 | `scripts/install-skill.*` | Установка всего suite в `.cursor/skills/` |
 | `scripts/check_package.py` | CI smoke |
 | `AGENTS.md` | ★ контекст агентов |
@@ -44,13 +45,13 @@ Suite не обещает индексацию, цитирование, попа
 
 ## 4. Статус / текущий приоритет
 
-**Harden for public release** выполнен в `main` (`fa45cb6`, 2026-07-27):
-guardrails fetch, honest outcome-limits, safe installer + CI matrix,
-PROMPT.en, issue/PR templates, усиленный `check_package.py`.
+**Harden for public release** выполнен в `main` (`fa45cb6`, 2026-07-27).
+B7 (curated golden + dump antipattern + WP replace docs) и B8 (public GitHub
+About/topics/homepage + CI badges) доведены до закрытия в репозитории.
 
-Variant A (multi-skill suite) + Wave 0 — закрыты. CHANGELOG пока в
-**Unreleased** — следующий шаг релиза: semver tag `0.1.0` и GitHub Release.
-Дальше по продукту — CLI linter (вариант B) по спросу.
+Variant A + Wave 0 закрыты. CHANGELOG в **Unreleased** — следующий шаг релиза:
+semver tag `0.1.0`. Живой `blog.bezpalov.com/llms.txt` обновляется по
+`docs/replace-rank-math-llms.md` (site ops). Дальше по продукту — CLI linter (B).
 
 ## 5. Как вносить изменения (агент)
 

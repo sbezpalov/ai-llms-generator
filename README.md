@@ -35,8 +35,17 @@ README и skills.
 
 Также: [`PROMPT.md`](PROMPT.md) / [`PROMPT.en.md`](PROMPT.en.md) (чат без
 Cursor), [`template-llms.txt`](template-llms.txt), [`example-llms.txt`](example-llms.txt)
-(golden curated sample).
+(golden curated sample для blog.bezpalov.com).
 Формат полного отчёта: [`examples/aio-audit-report.md`](examples/aio-audit-report.md).
+Антипаттерн dump: [`examples/llms-dump-antipattern.txt`](examples/llms-dump-antipattern.txt).
+
+Репозиторий: [github.com/sbezpalov/ai-llms-generator](https://github.com/sbezpalov/ai-llms-generator).
+
+## Curated vs dump
+
+SEO-плагины (например Rank Math) часто отдают `/llms.txt` как длинный список
+всех постов. Это **не** слой 2 AIO. Курированный эталон — `example-llms.txt`.
+Как заменить dump на WordPress: [`docs/replace-rank-math-llms.md`](docs/replace-rank-math-llms.md).
 
 ## Совместимость
 

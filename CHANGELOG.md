@@ -20,10 +20,15 @@ Public-release harden landed on `main` (2026-07-27, commit message
   cross-platform installer smoke tests
 - GitHub issue / PR templates, `CHANGELOG.md`, synthetic
   `examples/aio-audit-report.md`
+- Dump antipattern fixture (`examples/llms-dump-antipattern.txt`) and
+  WordPress Rank Math replacement guide (`docs/replace-rank-math-llms.md`)
 - Explicit compatibility and outcome-limit documentation
 
 ### Changed
 
+- Golden `example-llms.txt` now includes verified About/Privacy and suite repo
+  links; CI rejects Rank Math-style dumps as the golden sample
+- Public GitHub About/topics/homepage wired for discoverability
 - Cursor examples now use `/skill-name` invocation
 - Bot policy guidance distinguishes training, search, grounding, and
   user-triggered fetchers

@@ -33,8 +33,17 @@ and the skills; generated output follows the site’s primary language.
 
 Also: [`PROMPT.en.md`](PROMPT.en.md) / [`PROMPT.md`](PROMPT.md) (any chat UI),
 [`template-llms.txt`](template-llms.txt), [`example-llms.txt`](example-llms.txt)
-(golden curated sample).
+(golden curated sample for blog.bezpalov.com).
 Full report format: [`examples/aio-audit-report.md`](examples/aio-audit-report.md).
+Dump anti-pattern: [`examples/llms-dump-antipattern.txt`](examples/llms-dump-antipattern.txt).
+
+Repository: [github.com/sbezpalov/ai-llms-generator](https://github.com/sbezpalov/ai-llms-generator).
+
+## Curated vs dump
+
+SEO plugins (e.g. Rank Math) often expose `/llms.txt` as a long post dump. That
+is **not** AIO layer 2. The curated golden is `example-llms.txt`. How to replace
+a WordPress dump: [`docs/replace-rank-math-llms.md`](docs/replace-rank-math-llms.md).
 
 ## Compatibility
 

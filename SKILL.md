@@ -167,6 +167,8 @@ Deliver:
 ## Reference
 
 - Curated example: [example-llms.txt](example-llms.txt) (golden sample — not a plugin dump)
+- Dump antipattern fixture: [examples/llms-dump-antipattern.txt](examples/llms-dump-antipattern.txt)
+- Replace Rank Math dump: [docs/replace-rank-math-llms.md](docs/replace-rank-math-llms.md)
 - Template: [template-llms.txt](template-llms.txt)
 - Spec: https://llmstxt.org/
 - Google Search position on llms.txt:

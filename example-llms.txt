@@ -24,7 +24,14 @@ Last updated: 2026-07-27
 
 - [Как использовать прокси в CentOS / RHEL](https://blog.bezpalov.com/centos-proxy/): Системный HTTP/HTTPS/FTP proxy для shell, dnf, curl и wget.
 - [Безопасный Telegram](https://blog.bezpalov.com/telegram-security/): Модель угроз, настройки и сравнение с Signal/WhatsApp.
+- [Чей это код на самом деле?](https://blog.bezpalov.com/ai-code-legal-status/): Copyright и AI-output: три сценария риска и что фиксировать в политике.
+
+## About
+
+- [О сайте](https://blog.bezpalov.com/about/): Частный ИТ-журнал; контент AS IS, без оферты.
+- [Политика конфиденциальности](https://blog.bezpalov.com/privacy/): Обработка персональных данных и cookies.
 
 ## Optional
 
-- [AI Tooling Starter Kit (репозиторий)](https://github.com/sbezpalov/ai-tooling-starter-kit): Исходники каркаса, если нужен полный контекст вне блога.
+- [ai-llms-generator (репозиторий)](https://github.com/sbezpalov/ai-llms-generator): MIT AIO skill suite — curated llms.txt, robots AI policy, JSON-LD drafts.
+- [AI Tooling Starter Kit (репозиторий)](https://github.com/sbezpalov/ai-tooling-starter-kit): Исходники каркаса AGENTS.md вне блога.
