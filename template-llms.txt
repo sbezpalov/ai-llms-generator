@@ -1,0 +1,22 @@
+# Site Name
+
+> One-line tagline or meta description.
+
+What this site is, who it serves, main topics, and who maintains it — 2 to 4
+sentences in plain language.
+
+Last updated: YYYY-MM-DD
+
+## Main Section
+
+- [Page title](https://example.com/path/): Factual one-line description.
+- [Another page](https://example.com/other/): What the reader gets from this page.
+
+## Another Section
+
+- [Page title](https://example.com/section/page/)
+
+## About & Contact
+
+- [About](https://example.com/about/): Organization or author background.
+- [Contact](https://example.com/contact/): How to reach support or sales.
