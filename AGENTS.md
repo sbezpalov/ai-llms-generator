@@ -48,7 +48,7 @@ Suite не обещает индексацию, цитирование, попа
 
 ## 4. Статус / текущий приоритет
 
-**v0.1.0** — первый публичный MIT-релиз (skills A + harden/B7/B8 + CLI B).
+**v1.0.0** — стабильная публичная MIT-линейка (skills A + harden/B7/B8 + CLI B).
 Variant **C (MCP/hosted) отложен** до спроса.
 
 Site ops: заменить Rank Math dump на curated `example-llms.txt` по

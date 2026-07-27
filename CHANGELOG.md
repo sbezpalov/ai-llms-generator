@@ -6,6 +6,17 @@ The project uses semantic versioning for public releases.
 
 ## Unreleased
 
+## 1.0.0 — 2026-07-27
+
+Stable **1.0** public MIT release. Same feature set as `0.1.0`, promoted to a
+major version for public positioning (skills suite + `aio-lint` CLI/CI).
+Variant C (MCP/hosted) remains deferred.
+
+### Changed
+
+- Version branding and `aio-lint` User-Agent set to `1.0`
+- Docs/status mark the suite as the stable 1.0 line
+
 ## 0.1.0 — 2026-07-27
 
 First public MIT release of the AIO artifact suite + CLI linter.

@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/sbezpalov/ai-llms-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/sbezpalov/ai-llms-generator/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/sbezpalov/ai-llms-generator)](https://github.com/sbezpalov/ai-llms-generator/releases)
 
 [Русский](README.md) · **English**
 

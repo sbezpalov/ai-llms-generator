@@ -35,7 +35,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from aio_heuristics import absolute_https_links, classify_llms, dump_signals
 
 USER_AGENT = (
-    "aio-lint/0.1 (+https://github.com/sbezpalov/ai-llms-generator; research)"
+    "aio-lint/1.0 (+https://github.com/sbezpalov/ai-llms-generator; research)"
 )
 MAX_REDIRECTS = 3
 MAX_BODY_BYTES = {
