@@ -7,75 +7,67 @@
 
 ## 1. Проект
 
-Публичный MIT-пакет для AI-агентов (Cursor Skill + универсальный промпт): помогает
-аудировать сайт и собрать production-ready `llms.txt` плюс фрагмент для `robots.txt`.
+Публичный MIT **AIO skill suite** для AI-агентов: три слоя оптимизации сайта под
+LLM — политика AI-ботов в `robots.txt`, **курированный** `llms.txt` (emerging
+convention, llmstxt.org), Schema.org JSON-LD. Оркестратор — `aio-site-audit`.
 
-Целевая аудитория — владельцы блогов, docs и корпоративных сайтов, которые хотят
-сделать контент понятным для LLM/AI-краулеров (AIO). Контекст и мотивация —
-[статья про AIO](https://blog.bezpalov.com/optimize-site-for-ai/).
+Целевая аудитория — владельцы блогов, docs и корпоративных сайтов (AIO).
+Контекст: [статья про AIO](https://blog.bezpalov.com/optimize-site-for-ai/).
 
 ## 2. Стек
 
-- Контент: Markdown / plain text (`SKILL.md`, `PROMPT.md`, шаблоны `*.txt`)
-- Cursor Agent Skills (YAML frontmatter в `SKILL.md`)
-- AI tooling scaffold v2: `AGENTS.md` + тонкие редиректы (Claude / Cursor / Gemini / Perplexity)
-- CI: GitHub Actions (smoke-проверки структуры и frontmatter)
+- Контент: Markdown skills + JSON-LD templates (без npm/pip рантайма продукта)
+- Cursor Agent Skills (YAML frontmatter)
+- AI tooling scaffold v2: `AGENTS.md` + редиректы
+- CI: `scripts/check_package.py` (структура, frontmatter, формат llms.txt, JSON)
 - Лицензия: MIT
-
-Кода приложения, рантайма и зависимостей npm/pip **нет** — это skill/prompt-пакет.
 
 ## 3. Структура
 
 | Путь | Назначение |
 |------|------------|
-| `SKILL.md` | Cursor Agent Skill — пошаговый workflow генерации `llms.txt` |
-| `PROMPT.md` | Универсальный промпт для Claude / ChatGPT / любого чата |
-| `template-llms.txt` | Пустой шаблон `llms.txt` |
-| `example-llms.txt` | Живой пример (blog.bezpalov.com) |
-| `AGENTS.md` | ★ контекст и правила для агентов |
-| `README.md` / `README.en.md` | Документация (ru / en) |
-| `CONTRIBUTING.md` | Как контрибьютить |
-| `SECURITY.md` | Политика сообщений о проблемах |
-| `LICENSE` | MIT |
-| `scripts/check_package.py` | CI smoke-проверки структуры пакета |
-| `scripts/install-skill.*` | Установка skill в чужой проект |
-| `.cursor/rules/` | Cursor-правила (проект + safety + домен) |
-| `.claude/` | Claude Code settings / commands / agents |
-| `.ai/` | Карта раскладки + кросс-артефакты |
+| `SKILL.md` + `PROMPT.md` + `template-llms.txt` + `example-llms.txt` | Skill **generate-llms-txt** (слой 2; root = BC для блога/zip) |
+| `skills/aio-site-audit/` | Оркестратор трёх слоёв |
+| `skills/audit-robots-ai-bots/` | Слой 1 — AI bots / robots.txt |
+| `skills/draft-json-ld/` | Слой 3 — Schema.org + `templates/*.json` |
+| `scripts/install-skill.*` | Установка всего suite в `.cursor/skills/` |
+| `scripts/check_package.py` | CI smoke |
+| `AGENTS.md` | ★ контекст агентов |
+| `README.md` / `README.en.md` | Документация |
+| `CONTRIBUTING.md` / `SECURITY.md` / `LICENSE` | OSS |
 
 ## 4. Статус / текущий приоритет
 
-Публичный MIT-релиз skill-пакета: каркас AI tooling, двуязычная документация,
-CONTRIBUTING/SECURITY, CI smoke. Дальше — обратная связь по качеству генерируемых
-`llms.txt` и уточнение workflow под новые конвенции AIO.
+Вариант A: multi-skill AIO suite + Wave 0 (spec llmstxt.org, curated vs dump,
+robots-comment truth). Дальше по спросу — CLI linter (вариант B).
 
 ## 5. Как вносить изменения (агент)
 
-- Работай через план: декомпозируй задачу и покажи шаги ДО исполнения.
-- Human-in-the-loop: для необратимых операций — остановись и спроси.
-- Изменения атомарные; объясняй ЧТО и ПОЧЕМУ.
-- Правки skill/prompt — проверяй согласованность `SKILL.md` ↔ `PROMPT.md` ↔ шаблоны.
-- Не выдумывай URL в примерах; `example-llms.txt` должен отражать реальные страницы
-  или быть явно помечен как вымышленный.
-- Новый CI/скрипт — зелёный прогон до DoD.
+- План до исполнения; human-in-the-loop для необратимого.
+- Согласованность: правки слоя 2 — `SKILL.md` ↔ `PROMPT.md` ↔ шаблоны.
+- Новые skills — каталог `skills/<name>/SKILL.md` + запись в README ru/en,
+  `install-skill.*`, `check_package.py`.
+- Example = **curated golden**; не копировать Rank Math / plugin dumps.
+- Не выдумывать URL и Schema-факты (рейтинги, телефоны).
 
 ## 6. Безопасность (NEVER)
 
-- Секреты (пароли, ключи, токены, `.env`, локальные конфиги) — не коммитить и не выводить.
-- Не добавлять в шаблоны/примеры staging hosts, admin paths, credentials.
-- Не инструктировать агентов блокировать всех AI-ботов по умолчанию без явного запроса пользователя.
-- Не заявлять, что `llms.txt` — официальный стандарт IETF/W3C (это emerging convention).
-- Доставка: только через git → публичный GitHub; прод-сайты пользователей не трогать.
+- Секреты не коммитить и не выводить.
+- Только публичный `https`; без staging/admin/auth headers.
+- Не блокировать всех AI-ботов по умолчанию без явного запроса пользователя.
+- Не называть `llms.txt` стандартом IETF/W3C (emerging convention).
+- Не утверждать, что комментарий в `robots.txt` — директива discovery для ботов.
+- Прод-сайты пользователей не менять без подтверждения.
 
 ## 7. Definition of Done
 
-- [ ] Изменение локально; секреты не попали в код/коммит.
-- [ ] `SKILL.md` / `PROMPT.md` / шаблоны согласованы; CI smoke зелёный.
-- [ ] README.ru и README.en отражают поведение (если менялся UX установки).
-- [ ] Diff отревьюен; есть краткий план отката (revert commit).
+- [ ] Секреты не в коммите; только локальные правки.
+- [ ] `python scripts/check_package.py` зелёный; README.ru ↔ README.en синхронны по смыслу.
+- [ ] Skills согласованы с оркестратором `aio-site-audit`.
+- [ ] Diff отревьюен; откат = revert commit.
 
 ## Раскладка инструментов
 
-Артефакты — в `.ai/artifacts/` (кросс) и `.<инструмент>/artifacts/`. Детали — `.ai/README.md`.
+Артефакты — в `.ai/artifacts/` и `.<инструмент>/artifacts/`. Детали — `.ai/README.md`.
 
-<!-- Инициализировано init-ai-tooling v2 (2026-07-27); заполнено под публичный MIT-релиз. -->
+<!-- Инициализировано init-ai-tooling v2 (2026-07-27); AIO suite variant A. -->

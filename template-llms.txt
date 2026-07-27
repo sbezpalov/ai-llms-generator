@@ -12,11 +12,11 @@ Last updated: YYYY-MM-DD
 - [Page title](https://example.com/path/): Factual one-line description.
 - [Another page](https://example.com/other/): What the reader gets from this page.
 
-## Another Section
-
-- [Page title](https://example.com/section/page/)
-
 ## About & Contact
 
 - [About](https://example.com/about/): Organization or author background.
 - [Contact](https://example.com/contact/): How to reach support or sales.
+
+## Optional
+
+- [Secondary or archive page](https://example.com/archive/): Skippable when context is limited (llmstxt.org Optional section).

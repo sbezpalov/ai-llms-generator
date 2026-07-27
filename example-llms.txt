@@ -4,12 +4,12 @@
 
 Технический блог о корпоративной ИТ-инфраструктуре: Microsoft (Exchange, Lync/Skype for Business, OCS), унифицированные коммуникации (Cisco, Avaya, Polycom, WebEx, 3CX), сети, безопасность, виртуализация и облака. Автор — Sergey Bezpalov, Senior Solutions Architect (20+ лет в DC, гибридных облаках, сетях, безопасности и UC, регион EMEA). Посты публикуются на русском (канонично), часть — с английской адаптацией.
 
-Last updated: 2026-06-14
+Last updated: 2026-07-27
 
 ## Quick Tip
 
 - [Как оптимизировать сайт и блог под AI](https://blog.bezpalov.com/optimize-site-for-ai/): Три слоя — robots.txt, llms.txt и Schema.org — чтобы AI-агенты понимали ваш сайт так же уверенно, как люди.
-- [Как использовать прокси в CentOS / RHEL](https://blog.bezpalov.com/centos-proxy/): Системный HTTP/HTTPS/FTP proxy для shell, dnf, curl и wget.
+- [AI Tooling Starter Kit](https://blog.bezpalov.com/ai-tooling-starter-kit/): Открытый каркас AGENTS.md для Cursor, Claude, Antigravity/Gemini и Perplexity.
 
 ## Microsoft
 
@@ -18,3 +18,13 @@ Last updated: 2026-06-14
 ## Unified Communications
 
 - [Сброс настроек телефонов Snom](https://blog.bezpalov.com/snom-factory-reset/): Factory reset Snom через Rescue Mode — пошагово.
+- [3CX AI Edition](https://blog.bezpalov.com/3cx-ai-edition/): Обзор редакции 3CX Enterprise/AI: агенты, транскрипция, интеграции и пробелы.
+
+## Ops & Security
+
+- [Как использовать прокси в CentOS / RHEL](https://blog.bezpalov.com/centos-proxy/): Системный HTTP/HTTPS/FTP proxy для shell, dnf, curl и wget.
+- [Безопасный Telegram](https://blog.bezpalov.com/telegram-security/): Модель угроз, настройки и сравнение с Signal/WhatsApp.
+
+## Optional
+
+- [AI Tooling Starter Kit (репозиторий)](https://github.com/sbezpalov/ai-tooling-starter-kit): Исходники каркаса, если нужен полный контекст вне блога.
