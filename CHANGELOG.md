@@ -2,13 +2,13 @@
 
 All notable changes to this project are documented here.
 
-The project uses semantic versioning for public releases. Until the first tag,
-changes remain under **Unreleased**.
+The project uses semantic versioning for public releases.
 
 ## Unreleased
 
-Public-release harden landed on `main` (2026-07-27, commit message
-`Harden AIO suite for public release`). Ready to cut **v0.1.0** when tagging.
+## 0.1.0 — 2026-07-27
+
+First public MIT release of the AIO artifact suite + CLI linter.
 
 ### Added
 
@@ -46,3 +46,4 @@ Public-release harden landed on `main` (2026-07-27, commit message
 - Redirect, private-network target, origin, crawl-size, and binary-fetch
   restrictions are documented
 - `robots.txt` is explicitly described as policy rather than access control
+- `aio-lint` live mode is https-only with public-IP DNS checks
