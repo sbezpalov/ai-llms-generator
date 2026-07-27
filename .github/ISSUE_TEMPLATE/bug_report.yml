@@ -1,0 +1,49 @@
+name: Bug report
+description: Report incorrect skill behavior, documentation, or installation
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets, private URLs, authentication headers, or
+        exploitable security details. Use GitHub private vulnerability
+        reporting for security issues.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - aio-site-audit
+        - generate-llms-txt
+        - audit-robots-ai-bots
+        - draft-json-ld
+        - installers
+        - documentation
+        - CI
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Use example.com or another public non-sensitive URL.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Agent or environment
+      placeholder: Cursor version, Claude, ChatGPT, shell and OS

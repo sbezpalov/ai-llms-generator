@@ -6,12 +6,17 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   smoke:
     name: package smoke
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Python syntax
         run: python3 -m py_compile scripts/check_package.py
@@ -21,3 +26,64 @@ jobs:
 
       - name: Claude settings JSON
         run: python3 -c "import json; json.load(open('.claude/settings.json', encoding='utf-8'))"
+
+  installers:
+    name: installer smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Bash installer
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_root="$RUNNER_TEMP/aio-suite-install-test"
+          mkdir -p "$test_root"
+          bash scripts/install-skill.sh --dry-run "$test_root"
+          bash scripts/install-skill.sh "$test_root"
+          test -f "$test_root/.cursor/skills/generate-llms-txt/PROMPT.en.md"
+          test -f "$test_root/.cursor/skills/draft-json-ld/templates/article.json"
+          if bash scripts/install-skill.sh "$test_root"; then
+            echo "Expected reinstall without --force to fail" >&2
+            exit 1
+          fi
+          bash scripts/install-skill.sh --force "$test_root"
+          compgen -G "$test_root/.cursor/skills/generate-llms-txt.backup-*" >/dev/null
+
+      - name: PowerShell installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $TestRoot = Join-Path $env:RUNNER_TEMP "aio-suite-install-test"
+          New-Item -ItemType Directory -Path $TestRoot | Out-Null
+          & .\scripts\install-skill.ps1 -Target $TestRoot -DryRun
+          & .\scripts\install-skill.ps1 -Target $TestRoot
+          if (-not (Test-Path -LiteralPath (Join-Path $TestRoot ".cursor/skills/generate-llms-txt/PROMPT.en.md"))) {
+              throw "PROMPT.en.md was not installed"
+          }
+          if (-not (Test-Path -LiteralPath (Join-Path $TestRoot ".cursor/skills/draft-json-ld/templates/article.json"))) {
+              throw "article.json was not installed"
+          }
+          $Refused = $false
+          try {
+              & .\scripts\install-skill.ps1 -Target $TestRoot -ErrorAction Stop
+          }
+          catch {
+              $Refused = $true
+          }
+          if (-not $Refused) {
+              throw "Expected reinstall without -Force to fail"
+          }
+          & .\scripts\install-skill.ps1 -Target $TestRoot -Force
+          $Backups = Get-ChildItem -LiteralPath (Join-Path $TestRoot ".cursor/skills") `
+              -Directory -Filter "generate-llms-txt.backup-*"
+          if (-not $Backups) {
+              throw "Expected a backup after -Force"
+          }

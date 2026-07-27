@@ -8,7 +8,7 @@ Last updated: 2026-07-27
 
 ## Quick Tip
 
-- [Как оптимизировать сайт и блог под AI](https://blog.bezpalov.com/optimize-site-for-ai/): Три слоя — robots.txt, llms.txt и Schema.org — чтобы AI-агенты понимали ваш сайт так же уверенно, как люди.
+- [Как оптимизировать сайт и блог под AI](https://blog.bezpalov.com/optimize-site-for-ai/): Практический разбор robots.txt, курированного llms.txt и фактической Schema.org-разметки.
 - [AI Tooling Starter Kit](https://blog.bezpalov.com/ai-tooling-starter-kit/): Открытый каркас AGENTS.md для Cursor, Claude, Antigravity/Gemini и Perplexity.
 
 ## Microsoft
