@@ -37,6 +37,9 @@ Suite не обещает индексацию, цитирование, попа
 | `skills/draft-json-ld/` | Слой 3 — Schema.org + `templates/*.json` |
 | `examples/` | Golden report format + Rank Math-style dump antipattern |
 | `docs/replace-rank-math-llms.md` | Как заменить plugin dump на curated `/llms.txt` |
+| `docs/aio-lint.md` | CLI/CI AIO linter (вариант B) |
+| `scripts/aio_lint.py` | SSRF-safe live/fixture linter |
+| `scripts/aio_heuristics.py` | Shared dump/curation heuristics |
 | `scripts/install-skill.*` | Установка всего suite в `.cursor/skills/` |
 | `scripts/check_package.py` | CI smoke |
 | `AGENTS.md` | ★ контекст агентов |
@@ -45,14 +48,12 @@ Suite не обещает индексацию, цитирование, попа
 
 ## 4. Статус / текущий приоритет
 
-**Harden for public release** выполнен в `main` (`fa45cb6`, 2026-07-27).
-B7 (curated golden + dump antipattern + WP replace docs) и B8 (public GitHub
-About/topics/homepage + CI badges) доведены до закрытия в репозитории.
+**Harden + B7/B8** закрыты. **Variant B (CLI/CI AIO linter)** добавлен:
+`scripts/aio_lint.py`, offline fixtures, CI job + `aio-lint-live` workflow_dispatch.
 
-Variant A + Wave 0 закрыты. CHANGELOG в **Unreleased** — следующий шаг релиза:
-semver tag `0.1.0`. Живой `blog.bezpalov.com/llms.txt` обновляется по
-`docs/replace-rank-math-llms.md` (site ops). Дальше по продукту — CLI linter (B).
-
+CHANGELOG в **Unreleased** — следующий шаг релиза: semver tag `0.1.0`.
+Живой `blog.bezpalov.com/llms.txt` — site ops по `docs/replace-rank-math-llms.md`.
+Variant C (MCP/hosted) — только по спросу.
 ## 5. Как вносить изменения (агент)
 
 - План до исполнения; human-in-the-loop для необратимого.

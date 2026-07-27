@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Sitemap: https://fixture.example/sitemap.xml
+
+# Editor note (not a crawler directive):
+# https://fixture.example/llms.txt

@@ -37,6 +37,9 @@ Also: [`PROMPT.en.md`](PROMPT.en.md) / [`PROMPT.md`](PROMPT.md) (any chat UI),
 Full report format: [`examples/aio-audit-report.md`](examples/aio-audit-report.md).
 Dump anti-pattern: [`examples/llms-dump-antipattern.txt`](examples/llms-dump-antipattern.txt).
 
+Three-layer CLI linter (SSRF-safe): [`docs/aio-lint.md`](docs/aio-lint.md)
+(`python scripts/aio_lint.py https://example.com`).
+
 Repository: [github.com/sbezpalov/ai-llms-generator](https://github.com/sbezpalov/ai-llms-generator).
 
 ## Curated vs dump

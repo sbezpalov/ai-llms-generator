@@ -105,6 +105,12 @@ Then **top 3 actions** in order of evidence-backed impact. Do not automatically
 rank a missing `llms.txt` above crawlability, content quality, or factual
 structured data. Offer the explicit specialist commands next.
 
+For a machine-checkable score from this repo:
+
+```text
+python scripts/aio_lint.py https://example.com --json --strict
+```
+
 Optional: a publish checklist covering title/H1, useful summaries, visible
 authorship and dates, schema, sitemap, robots, optional `llms.txt`, and internal
 links.

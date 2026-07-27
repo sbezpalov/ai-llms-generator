@@ -34,6 +34,7 @@
 
 ```bash
 python3 scripts/check_package.py
+python3 scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --expect-l2 curated --strict
 ```
 
 На Windows:

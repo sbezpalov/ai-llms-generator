@@ -1,0 +1,20 @@
+# Fixture Curated Site
+
+> Short factual tagline for the fixture.
+
+A synthetic curated llms.txt used by aio-lint offline CI. Not a live site.
+
+Last updated: 2026-07-27
+
+## Docs
+
+- [Overview](https://fixture.example/docs/): Product overview page.
+- [API](https://fixture.example/api/): API reference entrypoint.
+
+## About
+
+- [About](https://fixture.example/about/): Organization background.
+
+## Optional
+
+- [Changelog](https://fixture.example/changelog/): Skippable release notes.

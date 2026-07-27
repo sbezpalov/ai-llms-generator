@@ -39,6 +39,9 @@ Cursor), [`template-llms.txt`](template-llms.txt), [`example-llms.txt`](example-
 Формат полного отчёта: [`examples/aio-audit-report.md`](examples/aio-audit-report.md).
 Антипаттерн dump: [`examples/llms-dump-antipattern.txt`](examples/llms-dump-antipattern.txt).
 
+CLI-линтер трёх слоёв (SSRF-safe): [`docs/aio-lint.md`](docs/aio-lint.md)
+(`python scripts/aio_lint.py https://example.com`).
+
 Репозиторий: [github.com/sbezpalov/ai-llms-generator](https://github.com/sbezpalov/ai-llms-generator).
 
 ## Curated vs dump

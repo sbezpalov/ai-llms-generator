@@ -22,10 +22,13 @@ Public-release harden landed on `main` (2026-07-27, commit message
   `examples/aio-audit-report.md`
 - Dump antipattern fixture (`examples/llms-dump-antipattern.txt`) and
   WordPress Rank Math replacement guide (`docs/replace-rank-math-llms.md`)
+- `aio-lint` CLI (`scripts/aio_lint.py`) with SSRF-safe https fetch, offline
+  fixtures, CI fixture job, and `aio-lint-live` workflow_dispatch
 - Explicit compatibility and outcome-limit documentation
 
 ### Changed
 
+- Shared dump/curation heuristics extracted to `scripts/aio_heuristics.py`
 - Golden `example-llms.txt` now includes verified About/Privacy and suite repo
   links; CI rejects Rank Math-style dumps as the golden sample
 - Public GitHub About/topics/homepage wired for discoverability

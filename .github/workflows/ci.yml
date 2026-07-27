@@ -19,10 +19,16 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Python syntax
-        run: python3 -m py_compile scripts/check_package.py
+        run: |
+          python3 -m py_compile scripts/check_package.py scripts/aio_heuristics.py scripts/aio_lint.py
 
       - name: Package structure & docs checks
         run: python3 scripts/check_package.py
+
+      - name: aio-lint fixtures
+        run: |
+          python3 scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --expect-l2 curated --strict
+          python3 scripts/aio_lint.py --fixture examples/aio-lint-fixtures/dump-site --expect-l2 dump
 
       - name: Claude settings JSON
         run: python3 -c "import json; json.load(open('.claude/settings.json', encoding='utf-8'))"
