@@ -21,11 +21,12 @@ Suite не обещает индексацию, цитирование, попа
 
 ## 2. Стек
 
-- Контент: Markdown skills + JSON-LD templates (без npm/pip рантайма продукта)
+- Контент: Markdown skills + JSON-LD templates (без npm/pip зависимостей)
 - Cursor Agent Skills (YAML frontmatter)
+- Stdlib CLI: `scripts/aio_lint.py` (+ `aio_heuristics.py`) — live/fixture lint
 - AI tooling scaffold v2: `AGENTS.md` + редиректы
-- CI: `scripts/check_package.py` (структура, frontmatter, формат llms.txt, JSON)
-- Лицензия: MIT
+- CI: `check_package.py` + aio-lint fixtures; опционально `aio-lint-live`
+- Лицензия: MIT; релиз **v1.0.0**
 
 ## 3. Структура
 
@@ -35,16 +36,18 @@ Suite не обещает индексацию, цитирование, попа
 | `skills/aio-site-audit/` | Оркестратор трёх слоёв |
 | `skills/audit-robots-ai-bots/` | Слой 1 — AI bots / robots.txt |
 | `skills/draft-json-ld/` | Слой 3 — Schema.org + `templates/*.json` |
-| `examples/` | Golden report format + Rank Math-style dump antipattern |
+| `examples/` | Report format, dump antipattern, aio-lint fixtures |
 | `docs/replace-rank-math-llms.md` | Как заменить plugin dump на curated `/llms.txt` |
-| `docs/aio-lint.md` | CLI/CI AIO linter (вариант B) |
+| `docs/aio-lint.md` | CLI/CI AIO linter |
 | `scripts/aio_lint.py` | SSRF-safe live/fixture linter |
 | `scripts/aio_heuristics.py` | Shared dump/curation heuristics |
 | `scripts/install-skill.*` | Установка всего suite в `.cursor/skills/` |
-| `scripts/check_package.py` | CI smoke |
+| `scripts/check_package.py` | CI smoke (включает fixture-прогон aio-lint) |
+| `.github/workflows/ci.yml` | Package + installer + aio-lint fixtures |
+| `.github/workflows/aio-lint-live.yml` | Live URL через workflow_dispatch |
 | `AGENTS.md` | ★ контекст агентов |
 | `README.md` / `README.en.md` | Документация |
-| `CONTRIBUTING.md` / `SECURITY.md` / `LICENSE` | OSS |
+| `CONTRIBUTING.md` / `SECURITY.md` / `LICENSE` / `CHANGELOG.md` | OSS |
 
 ## 4. Статус / текущий приоритет
 
@@ -53,6 +56,7 @@ Variant **C (MCP/hosted) отложен** до спроса.
 
 Site ops: заменить Rank Math dump на curated `example-llms.txt` по
 `docs/replace-rank-math-llms.md`. Дальше — feedback и точечные правки skills/lint.
+
 ## 5. Как вносить изменения (агент)
 
 - План до исполнения; human-in-the-loop для необратимого.
@@ -91,4 +95,4 @@ Site ops: заменить Rank Math dump на curated `example-llms.txt` по
 
 Артефакты — в `.ai/artifacts/` и `.<инструмент>/artifacts/`. Детали — `.ai/README.md`.
 
-<!-- Инициализировано init-ai-tooling v2 (2026-07-27); AIO suite variant A. -->
+<!-- Инициализировано init-ai-tooling v2 (2026-07-27); suite v1.0.0. -->

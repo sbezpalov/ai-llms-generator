@@ -6,9 +6,10 @@
 
 [Русский](README.md) · **English**
 
-An experimental AIO artifact suite for Cursor and other agents: it reviews AI
-crawler policy in `robots.txt`, prepares a **curated**
-[`llms.txt`](https://llmstxt.org/), and drafts factual Schema.org JSON-LD.
+A public MIT **AIO artifact suite** (v1.0): Cursor skills plus the stdlib
+`aio-lint` CLI to review three site layers — AI crawler policy in `robots.txt`,
+a **curated** [`llms.txt`](https://llmstxt.org/), and factual Schema.org JSON-LD
+drafts.
 
 > `llms.txt` is an **emerging convention**, not an IETF/W3C standard.
 > A curated map is not a dump of every URL from an SEO plugin.
@@ -99,9 +100,10 @@ source of truth is [`AGENTS.md`](AGENTS.md). See [CONTRIBUTING.md](CONTRIBUTING.
 
 ```bash
 python scripts/check_package.py
+python scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --expect-l2 curated --strict
 ```
 
-See [CHANGELOG.md](CHANGELOG.md) for changes.
+See [CHANGELOG.md](CHANGELOG.md) for changes. Current release: **v1.0.0**.
 
 ## License
 

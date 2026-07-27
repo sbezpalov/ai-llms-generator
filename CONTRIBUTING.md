@@ -6,10 +6,10 @@
 
 ## Что это за репозиторий
 
-Это **AIO skill suite** (Markdown skills + JSON-LD templates), не приложение.
-Рантайма и зависимостей npm/pip нет.
+Это **AIO skill suite + stdlib CLI** (`aio-lint`): Markdown skills, JSON-LD
+templates и офлайн/live-линтер без npm/pip зависимостей.
 
-Источник истины для агентов — [`AGENTS.md`](AGENTS.md).
+Источник истины для агентов — [`AGENTS.md`](AGENTS.md). Текущий релиз: **v1.0.0**.
 
 ## Главные правила
 
@@ -41,9 +41,11 @@ python3 scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --
 
 ```powershell
 python scripts/check_package.py
+python scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --expect-l2 curated --strict
 ```
 
-CI гоняет тот же скрипт на каждый push / PR.
+CI гоняет `check_package.py` (включая fixture-прогон aio-lint) и отдельные
+installer/aio-lint steps на каждый push / PR.
 
 ## Стиль
 

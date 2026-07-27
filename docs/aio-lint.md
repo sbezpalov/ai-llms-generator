@@ -1,7 +1,7 @@
-# aio-lint
+# aio-lint (v1.0)
 
 Stdlib-only CLI that scores AIO artifacts for a **public https** site (or an
-offline fixture):
+offline fixture). Ships in **ai-llms-generator v1.0.0**.
 
 | Layer | Check |
 |-------|--------|

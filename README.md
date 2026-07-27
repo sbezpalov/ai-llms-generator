@@ -6,8 +6,8 @@
 
 **Русский** · [English](README.en.md)
 
-Экспериментальный набор skills для аудита AIO-артефактов в Cursor и других
-агентах: проверяет политику AI-краулеров в `robots.txt`, готовит
+Публичный MIT **AIO artifact suite** (v1.0): Cursor skills + stdlib CLI
+`aio-lint` для проверки трёх слоёв сайта — политика AI-ботов в `robots.txt`,
 **курированный** [`llms.txt`](https://llmstxt.org/) и черновики фактического
 Schema.org JSON-LD.
 
@@ -101,9 +101,10 @@ SEO-плагины (например Rank Math) часто отдают `/llms.t
 
 ```bash
 python scripts/check_package.py
+python scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --expect-l2 curated --strict
 ```
 
-История изменений: [CHANGELOG.md](CHANGELOG.md).
+История изменений: [CHANGELOG.md](CHANGELOG.md). Текущий релиз: **v1.0.0**.
 
 ## Лицензия
 
