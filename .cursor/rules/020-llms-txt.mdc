@@ -1,0 +1,13 @@
+---
+description: Доменные правила пакета generate-llms-txt / AIO
+alwaysApply: true
+---
+
+# llms.txt / AIO
+
+- `llms.txt` — emerging convention, не IETF/W3C-стандарт.
+- Не выдумывай URL: только проверенные абсолютные `https://` или пометка TODO.
+- Согласованность: правки workflow — сразу в `SKILL.md` и `PROMPT.md`.
+- Пример `example-llms.txt` держи коротким и фактичным; без маркетинговой воды.
+- Объём целевого `llms.txt` — ориентир до ~8 KB (индекс, не dump sitemap).
+- Полный контекст — `../../AGENTS.md`.

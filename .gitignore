@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+*.local
+.claude/settings.local.json
+.DS_Store
+
+# Python / editor noise
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS
+Thumbs.db

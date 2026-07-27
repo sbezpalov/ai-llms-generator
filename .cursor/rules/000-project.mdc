@@ -1,0 +1,9 @@
+---
+description: Базовый контекст проекта ai-llms-generator — указывает на AGENTS.md
+alwaysApply: true
+---
+
+# ai-llms-generator
+
+Источник истины — `../../AGENTS.md` (прочитай целиком). Здесь и в соседних `*.mdc` —
+только Cursor-специфика и детальные тематические правила.

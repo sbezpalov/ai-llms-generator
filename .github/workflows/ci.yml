@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: package smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python syntax
+        run: python3 -m py_compile scripts/check_package.py
+
+      - name: Package structure & docs checks
+        run: python3 scripts/check_package.py
+
+      - name: Claude settings JSON
+        run: python3 -c "import json; json.load(open('.claude/settings.json', encoding='utf-8'))"
