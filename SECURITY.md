@@ -1,66 +1,68 @@
-# Безопасность
+# Security
 
-*(English: to report a vulnerability, use GitHub’s “Report a vulnerability” under
-the Security tab, or email for anything sensitive. Details below.)*
+To report a vulnerability, use GitHub’s **Report a vulnerability** under the
+Security tab, or email for anything sensitive. Details below.
 
-## Что делает этот проект
+Russian version: [`SECURITY.ru.md`](SECURITY.ru.md).
 
-Репозиторий распространяет **AIO skill suite** (Cursor Skills, промпты, шаблоны
-`llms.txt` / JSON-LD) и опциональный stdlib CLI `scripts/aio_lint.py`. Skills
-сами по себе не ставят серверные агенты и не тянут npm/pip зависимости.
+## What this project does
 
-Скрипт `scripts/check_package.py` только читает файлы репозитория и проверяет
-структуру — сеть не трогает (кроме того, что он локально запускает aio-lint
-на offline fixtures).
+This repository ships an **AIO skill suite** (Cursor Skills, prompts, `llms.txt`
+/ JSON-LD templates) and an optional stdlib CLI `scripts/aio_lint.py`. The
+skills themselves do not install server agents and do not pull npm/pip
+dependencies.
 
-`scripts/aio_lint.py` **может** ходить в сеть при live-режиме. Ограничения:
-только `https`, порт 443, публичные DNS IP (без localhost/private/link-local),
-same-host redirects, лимиты размера/таймаута. Не передавайте staging URL и не
-запускайте lint против внутренних хостов.
+`scripts/check_package.py` only reads repository files and validates structure.
+It does not use the network except for launching aio-lint against **offline
+fixtures**.
 
-## Риски, о которых стоит знать
+`scripts/aio_lint.py` **may** use the network in live mode. Limits: `https`
+only, port 443, public DNS IPs (no localhost / private / link-local), same-host
+redirects, size and timeout caps. Do not pass staging URLs or lint internal
+hosts.
 
-- Агент, выполняющий skill/prompt, может ходить на публичные URL сайта
-  пользователя (sitemap, homepage). Не передавайте в промпт staging hosts,
-  токены и приватные админ-пути.
-- Публичная страница может содержать indirect prompt injection — текст,
-  замаскированный под инструкцию агенту. Skills должны считать содержимое сайта
-  недоверенными данными и никогда не выполнять найденные там команды.
-- Redirect или DNS-имя может вести на localhost, private/link-local IP либо
-  внутренний сервис. Перед каждым fetch и после redirect нужно заново проверять
-  target; по умолчанию аудит остаётся на исходном origin.
-- `robots.txt` — публичная добровольно соблюдаемая политика, не access control.
-  Приватные данные защищаются аутентификацией и сетевыми ограничениями, а не
-  `Disallow`.
-- Большие sitemap могут привести к чрезмерному crawl/контексту. Workflow
-  ограничивает выборку и не скачивает binaries.
-- Шаблоны и примеры не должны содержать credentials.
+## Risks to be aware of
 
-## Как сообщить о проблеме
+- An agent running a skill/prompt may fetch the user’s public site URLs
+  (sitemap, homepage). Do not put staging hosts, tokens, or private admin paths
+  into the prompt.
+- A public page may contain indirect prompt injection — text disguised as agent
+  instructions. Skills must treat site content as untrusted data and never
+  execute commands found there.
+- A redirect or DNS name may resolve to localhost, a private/link-local IP, or
+  an internal service. Re-check the target before every fetch and after every
+  redirect; by default the audit stays on the original origin.
+- `robots.txt` is a public, voluntarily honored policy, not access control.
+  Protect private data with authentication and network controls, not `Disallow`.
+- Large sitemaps can cause excessive crawl/context. Workflows bound sampling and
+  do not download binaries.
+- Templates and examples must not contain credentials.
 
-Если нашли способ через инструкции пакета спровоцировать опасное поведение агента
-(утечка секретов, деструктивные команды «по умолчанию», подмена URL и т.п.):
+## How to report an issue
 
-1. Откройте вкладку **Security** репозитория → **Report a vulnerability**
+If you find a way for this package’s instructions to trigger dangerous agent
+behavior (secret leakage, destructive defaults, URL swapping, etc.):
+
+1. Open the repository **Security** tab → **Report a vulnerability**
    (GitHub Security Advisories).
-2. Если возможности нет — напишите на sergey@bezpalov.com с темой,
-   начинающейся с `SECURITY:`.
+2. If that is unavailable, email sergey@bezpalov.com with a subject starting
+   with `SECURITY:`.
 
-Пожалуйста, **не открывайте публичный issue** для эксплуатируемых проблем, пока они
-не исправлены.
+Please **do not open a public issue** for exploitable problems until they are
+fixed.
 
-Ожидаемое время первичного ответа — несколько дней. Строгих SLA нет.
+Expected initial response time is a few days. There is no strict SLA.
 
-## Что не считается уязвимостью
+## What is not a vulnerability
 
-- «Агент сгенерировал неточный `llms.txt`» — это качество prompt/skill, заведите
-  обычный issue.
-- Устаревшие ссылки в примере — issue / PR.
-- Политики robots.txt, которые пользователь выбрал сам (opt-in / opt-out ботов).
-- Отсутствие обещанного эффекта в AI-ответах или поисковой выдаче: suite не даёт
-  гарантий индексации, цитирования либо ранжирования.
+- “The agent drafted an inaccurate `llms.txt`” — prompt/skill quality; open a
+  normal issue.
+- Stale links in the example — issue / PR.
+- `robots.txt` policies the user chose (bot opt-in / opt-out).
+- Missing AI-answer or ranking impact: the suite does not guarantee indexing,
+  citations, or rankings.
 
-## Поддерживаемые версии
+## Supported versions
 
-Исправления выходят для актуальной стабильной линейки **v1.x** (`main`).
-Тег `v0.1.0` сохранён в истории, но не является отдельной support-веткой.
+Fixes ship for the current stable **v1.x** line (`main`). Tag `v0.1.0` remains
+in history but is not a separate support branch.

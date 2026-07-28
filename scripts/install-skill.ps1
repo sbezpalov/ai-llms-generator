@@ -40,7 +40,7 @@ $Skills = @(
         Files = @(
             "SKILL.md",
             "PROMPT.md",
-            "PROMPT.en.md",
+            "PROMPT.ru.md",
             "template-llms.txt",
             "example-llms.txt"
         )

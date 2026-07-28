@@ -6,6 +6,12 @@ The project uses semantic versioning for public releases.
 
 ## Unreleased
 
+### Changed
+
+- Documentation defaults to **English**; Russian mirrors use `*.ru.md`
+  (`README.ru.md`, `PROMPT.ru.md`, `AGENTS.ru.md`, `CONTRIBUTING.ru.md`,
+  `SECURITY.ru.md`)
+
 ## 1.0.0 — 2026-07-27
 
 Stable **1.0** public MIT release. Same feature set as `0.1.0`, promoted to a

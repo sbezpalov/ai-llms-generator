@@ -1,9 +1,10 @@
 ---
-description: Базовый контекст проекта ai-llms-generator — указывает на AGENTS.md
+description: Base project context for ai-llms-generator — points to AGENTS.md
 alwaysApply: true
 ---
 
 # ai-llms-generator
 
-Источник истины — `../../AGENTS.md` (прочитай целиком). Здесь и в соседних `*.mdc` —
-только Cursor-специфика и детальные тематические правила.
+Source of truth is `../../AGENTS.md` (read it fully). This file and sibling
+`*.mdc` rules hold Cursor-specific and topical detail only. Docs default
+language is English; Russian mirrors use `*.ru.md`.

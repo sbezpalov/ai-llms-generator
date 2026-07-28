@@ -119,7 +119,7 @@ prepare_dest "$GEN"
 cp \
   "$ROOT/SKILL.md" \
   "$ROOT/PROMPT.md" \
-  "$ROOT/PROMPT.en.md" \
+  "$ROOT/PROMPT.ru.md" \
   "$ROOT/template-llms.txt" \
   "$ROOT/example-llms.txt" \
   "$GEN/"

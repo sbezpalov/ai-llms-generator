@@ -19,17 +19,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED = [
     "AGENTS.md",
+    "AGENTS.ru.md",
     "CHANGELOG.md",
     "CLAUDE.md",
     "CONTRIBUTING.md",
+    "CONTRIBUTING.ru.md",
     "GEMINI.md",
     "LICENSE",
     "PERPLEXITY.md",
-    "PROMPT.en.md",
     "PROMPT.md",
-    "README.en.md",
+    "PROMPT.ru.md",
     "README.md",
+    "README.ru.md",
     "SECURITY.md",
+    "SECURITY.ru.md",
     "SKILL.md",
     "example-llms.txt",
     "template-llms.txt",
@@ -297,7 +300,7 @@ def validate_curated_golden() -> None:
 
 
 def validate_public_github_docs() -> None:
-    for name in ("README.md", "README.en.md"):
+    for name in ("README.md", "README.ru.md"):
         text = read(name)
         if "github.com/sbezpalov/ai-llms-generator" not in text:
             fail(f"{name}: must link the public GitHub repository")
@@ -309,6 +312,13 @@ def validate_public_github_docs() -> None:
             fail(f"{name}: must point to Rank Math dump replacement docs")
         if "aio-lint.md" not in text and "aio_lint.py" not in text:
             fail(f"{name}: must document aio-lint CLI")
+    readme = read("README.md")
+    if "**English**" not in readme or "README.ru.md" not in readme:
+        fail("README.md must be English-default with a link to README.ru.md")
+    if "не гарантирует" not in read("README.ru.md"):
+        fail("README.ru.md must state that the suite does not guarantee outcomes")
+    if "does not guarantee" not in readme:
+        fail("README.md must state that the suite does not guarantee outcomes")
 
 
 def validate_aio_lint_cli() -> None:
@@ -378,22 +388,19 @@ def main() -> None:
     for rel, expected_name in SKILL_NAMES.items():
         validate_skill(rel, expected_name)
 
-    for name in ("README.md", "README.en.md", "SKILL.md", "AGENTS.md"):
+    for name in ("README.md", "README.ru.md", "SKILL.md", "AGENTS.md"):
         if "emerging convention" not in read(name):
             fail(f"{name}: must call llms.txt an emerging convention")
-
-    if "не гарантирует" not in read("README.md"):
-        fail("README.md must state that the suite does not guarantee outcomes")
-    if "does not guarantee" not in read("README.en.md"):
-        fail("README.en.md must state that the suite does not guarantee outcomes")
 
     agents = read("AGENTS.md")
     leftovers = re.findall(r"<!--\s*TODO:.*?-->", agents)
     if leftovers:
         fail("AGENTS.md still has scaffold TODO comments")
-    for safety_term in ("недоверенными", "private/link-local", "access control"):
+    for safety_term in ("untrusted data", "private/link-local", "access control"):
         if safety_term not in agents:
             fail(f"AGENTS.md: missing network safety term: {safety_term}")
+    if "AGENTS.ru.md" not in agents or "English" not in agents:
+        fail("AGENTS.md must declare English default and link AGENTS.ru.md")
 
     example = read("example-llms.txt")
     template = read("template-llms.txt")
@@ -404,7 +411,7 @@ def main() -> None:
     validate_curated_golden()
     validate_public_github_docs()
 
-    for prompt_name in ("PROMPT.md", "PROMPT.en.md"):
+    for prompt_name in ("PROMPT.md", "PROMPT.ru.md"):
         prompt = read(prompt_name)
         if "{{URL}}" not in prompt:
             fail(f"{prompt_name}: must keep the {{{{URL}}}} placeholder")
@@ -412,6 +419,8 @@ def main() -> None:
             fail(f"{prompt_name}: must reference generate-llms-txt")
         if "untrusted" not in prompt and "недоверенными" not in prompt:
             fail(f"{prompt_name}: must include prompt-injection safety")
+    if "PROMPT.ru.md" not in read("PROMPT.md"):
+        fail("PROMPT.md must link the Russian alternative PROMPT.ru.md")
 
     robot_skill = read("skills/audit-robots-ai-bots/SKILL.md")
     for token in (
@@ -443,10 +452,10 @@ def main() -> None:
 
     install_sh = read("scripts/install-skill.sh")
     install_ps1 = read("scripts/install-skill.ps1")
-    for term in ("aio-site-audit", "PROMPT.en.md", "--force", "--dry-run"):
+    for term in ("aio-site-audit", "PROMPT.ru.md", "--force", "--dry-run"):
         if term not in install_sh:
             fail(f"install-skill.sh: missing {term}")
-    for term in ("aio-site-audit", "PROMPT.en.md", "[switch]$Force", "[switch]$DryRun"):
+    for term in ("aio-site-audit", "PROMPT.ru.md", "[switch]$Force", "[switch]$DryRun"):
         if term not in install_ps1:
             fail(f"install-skill.ps1: missing {term}")
 

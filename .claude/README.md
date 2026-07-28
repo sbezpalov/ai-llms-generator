@@ -1,6 +1,6 @@
-# .claude/ — конфигурация Claude Code
+# .claude/ — Claude Code configuration
 
-Источник истины — [`../AGENTS.md`](../AGENTS.md).
+Source of truth: [`../AGENTS.md`](../AGENTS.md).
 
-- `commands/` — slash-команды; `agents/` — субагенты; `artifacts/` — артефакты Claude.
-- `settings.json` — командные настройки; `settings.local.json` — личные (не коммить).
+- `commands/` — slash commands; `agents/` — subagents; `artifacts/` — Claude artifacts.
+- `settings.json` — team settings; `settings.local.json` — personal (do not commit).

@@ -1,11 +1,16 @@
 # GEMINI.md — Google Antigravity / Gemini
 
-> Antigravity читает и `AGENTS.md`, и `GEMINI.md`; при конфликте приоритет у `GEMINI.md`.
-> **Источник истины по проекту — `AGENTS.md`, прочитай первым.** Здесь — Antigravity/Gemini-специфика.
+> Antigravity reads both `AGENTS.md` and `GEMINI.md`; on conflict, `GEMINI.md`
+> wins. **Project source of truth is `AGENTS.md` — read it first.** This file is
+> Antigravity/Gemini-specific.
 
-## Агентный режим
-- Работай через план (task/plan): декомпозируй задачу и покажи шаги до исполнения.
-- Human-in-the-loop: для правок прод-данных/ядра — остановись и запроси подтверждение.
-- Формируй артефакты (diff, список файлов, план отката) до применения; сохраняй в `.antigravity/artifacts/`.
-- Не выполняй shell-команды против боевого сервера/БД.
-- Изменения атомарные, с объяснением ЧТО и ПОЧЕМУ.
+Russian agent mirror: [`AGENTS.ru.md`](AGENTS.ru.md).
+
+## Agent mode
+
+- Work through a plan: decompose the task and show steps before execution.
+- Human-in-the-loop: for production data/core changes — stop and ask.
+- Form artifacts (diff, file list, rollback plan) before applying; store them in
+  `.antigravity/artifacts/`.
+- Do not run shell commands against production servers/databases.
+- Keep changes atomic and explain WHAT and WHY.

@@ -54,7 +54,7 @@ jobs:
           mkdir -p "$test_root"
           bash scripts/install-skill.sh --dry-run "$test_root"
           bash scripts/install-skill.sh "$test_root"
-          test -f "$test_root/.cursor/skills/generate-llms-txt/PROMPT.en.md"
+          test -f "$test_root/.cursor/skills/generate-llms-txt/PROMPT.ru.md"
           test -f "$test_root/.cursor/skills/draft-json-ld/templates/article.json"
           if bash scripts/install-skill.sh "$test_root"; then
             echo "Expected reinstall without --force to fail" >&2
@@ -71,8 +71,8 @@ jobs:
           New-Item -ItemType Directory -Path $TestRoot | Out-Null
           & .\scripts\install-skill.ps1 -Target $TestRoot -DryRun
           & .\scripts\install-skill.ps1 -Target $TestRoot
-          if (-not (Test-Path -LiteralPath (Join-Path $TestRoot ".cursor/skills/generate-llms-txt/PROMPT.en.md"))) {
-              throw "PROMPT.en.md was not installed"
+          if (-not (Test-Path -LiteralPath (Join-Path $TestRoot ".cursor/skills/generate-llms-txt/PROMPT.ru.md"))) {
+              throw "PROMPT.ru.md was not installed"
           }
           if (-not (Test-Path -LiteralPath (Join-Path $TestRoot ".cursor/skills/draft-json-ld/templates/article.json"))) {
               throw "article.json was not installed"

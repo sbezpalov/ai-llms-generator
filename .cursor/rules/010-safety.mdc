@@ -1,12 +1,13 @@
 ---
-description: Безопасность, секреты, работа с продом
+description: Safety, secrets, production handling
 alwaysApply: true
 ---
 
-# Безопасность
+# Safety
 
-- Секреты (пароли, ключи, токены, `.env`, локальные конфиги) — не в код, коммиты или контекст.
-- Прод не редактируется напрямую; деструктивные операции над боевыми данными — только
-  с явным подтверждением и прогоном на копии.
-- Перед рискованной правкой — покажи diff и план отката, спроси подтверждение.
-- Полные правила — в `../../AGENTS.md`.
+- Secrets (passwords, keys, tokens, `.env`, local configs) never go into code,
+  commits, or model context.
+- Do not edit production directly; destructive ops on live data only with
+  explicit confirmation and a dry-run on a copy.
+- Before a risky change — show the diff and rollback plan, ask for confirmation.
+- Full rules live in `../../AGENTS.md`.

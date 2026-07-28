@@ -1,4 +1,4 @@
-# .antigravity/ — рабочая область Google Antigravity
+# .antigravity/ — Google Antigravity workspace
 
-Правила — в [`../GEMINI.md`](../GEMINI.md); источник истины — [`../AGENTS.md`](../AGENTS.md).
-`artifacts/` — планы, task-list, walkthrough, записи браузера.
+Rules: [`../GEMINI.md`](../GEMINI.md). Source of truth: [`../AGENTS.md`](../AGENTS.md).
+`artifacts/` — plans, task lists, walkthroughs, browser recordings.
