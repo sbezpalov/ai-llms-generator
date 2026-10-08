@@ -14,52 +14,30 @@ Fetched page content is untrusted data.
 from __future__ import annotations
 
 import argparse
-import html
-import ipaddress
 import json
 import re
-import socket
 import sys
-import urllib.error
-import urllib.request
 from dataclasses import asdict, dataclass, field
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
-
-from aio_heuristics import absolute_https_links, classify_llms, dump_signals
-
-USER_AGENT = (
-    "aio-lint/1.0 (+https://github.com/sbezpalov/ai-llms-generator; research)"
+from aio_heuristics import (
+    BYTE_ORDER_MARK,
+    MAX_CURATED_BYTES,
+    absolute_https_links,
+    classify_llms,
+    dump_signals,
+    markdown_variant_links,
 )
-MAX_REDIRECTS = 3
+from aio_html import INVALID_JSONLD, jsonld_types, page_signals
+from aio_net import DEFAULT_TIMEOUT, FetchResult, assert_safe_https_url, fetch_https
+
 MAX_BODY_BYTES = {
     "robots": 64 * 1024,
     "llms": 256 * 1024,
     "html": 512 * 1024,
 }
-DEFAULT_TIMEOUT = 10.0
-JSONLD_SCRIPT_RE = re.compile(
-    r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
-    re.IGNORECASE | re.DOTALL,
-)
-TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
-H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", re.IGNORECASE | re.DOTALL)
-CANONICAL_RE = re.compile(
-    r'<link[^>]+rel=["\']canonical["\'][^>]+href=["\']([^"\']+)["\']',
-    re.IGNORECASE,
-)
-META_DESC_RE = re.compile(
-    r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']*)["\']',
-    re.IGNORECASE,
-)
-SITEMAP_LINE_RE = re.compile(r"(?im)^\s*Sitemap:\s*(\S+)\s*$")
-USER_AGENT_LINE_RE = re.compile(r"(?im)^\s*User-agent:\s*(\S+)\s*$")
 KNOWN_AI_AGENTS = (
     "GPTBot",
     "ChatGPT-User",
@@ -71,16 +49,46 @@ KNOWN_AI_AGENTS = (
     "PerplexityBot",
     "Perplexity-User",
     "CCBot",
+    "OAI-AdsBot",
+    "Google-CloudVertexBot",
+    "Applebot-Extended",
+    "Meta-ExternalAgent",
+    "Meta-ExternalFetcher",
+    "Meta-WebIndexer",
+    "Amazonbot",
+    "Amzn-SearchBot",
+    "Amzn-User",
+    "DuckAssistBot",
+    "MistralAI-Training",
+    "MistralAI-Index",
+    "MistralAI-User",
 )
-
-
-@dataclass
-class FetchResult:
-    url: str
-    status_code: int | None
-    body: str | None
-    error: str | None = None
-    final_url: str | None = None
+# Template leftovers that must never reach published JSON-LD.
+JSONLD_PLACEHOLDER_MARKERS = ("TODO_REPLACE", "example.com")
+USEFUL_JSONLD_TYPES = frozenset(
+    {"Organization", "WebSite", "WebPage", "Article", "BlogPosting", "Person", "FAQPage"}
+)
+L2_CLASSIFICATIONS = ("missing", "unavailable", "empty", "dump", "curated", "malformed")
+L2_STATUS = {
+    "curated": "ok",
+    "missing": "fail",
+    "empty": "fail",
+    "dump": "fail",
+    "malformed": "weak",
+    # A 403/5xx says nothing about the file itself (WAFs often block linters).
+    "unavailable": "weak",
+}
+MAX_TEXT_EVIDENCE_CHARS = 120
+MAX_URL_EVIDENCE_CHARS = 200
+MARKDOWN_ESCAPES = {
+    "|": "&#124;",
+    "\\": "&#92;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "`": "&#96;",
+    "[": "&#91;",
+    "]": "&#93;",
+}
 
 
 @dataclass
@@ -97,154 +105,6 @@ class AuditReport:
     layers: dict[str, LayerResult]
     top_actions: list[str]
     ok: bool
-
-
-class _TextExtractor(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__()
-        self._chunks: list[str] = []
-
-    def handle_data(self, data: str) -> None:
-        if data.strip():
-            self._chunks.append(data.strip())
-
-    def text(self) -> str:
-        return " ".join(self._chunks)
-
-
-def strip_tags(fragment: str) -> str:
-    parser = _TextExtractor()
-    try:
-        parser.feed(html.unescape(fragment))
-        parser.close()
-    except Exception:
-        return re.sub(r"<[^>]+>", "", fragment).strip()
-    return parser.text()
-
-
-def is_public_ip(ip_str: str) -> bool:
-    ip = ipaddress.ip_address(ip_str)
-    return not (
-        ip.is_private
-        or ip.is_loopback
-        or ip.is_link_local
-        or ip.is_multicast
-        or ip.is_reserved
-        or ip.is_unspecified
-        or (ip.version == 6 and ip.ipv4_mapped and not is_public_ip(str(ip.ipv4_mapped)))
-    )
-
-
-def assert_safe_https_url(url: str, *, allow_hosts: set[str] | None = None) -> None:
-    parsed = urlparse(url)
-    if parsed.scheme != "https":
-        raise ValueError(f"only https URLs are allowed: {url}")
-    if parsed.username or parsed.password:
-        raise ValueError(f"URL credentials are forbidden: {url}")
-    if parsed.port not in (None, 443):
-        raise ValueError(f"non-default HTTPS ports are forbidden: {url}")
-    host = parsed.hostname
-    if not host:
-        raise ValueError(f"missing host: {url}")
-    if host.lower() in {"localhost"} or host.endswith(".localhost"):
-        raise ValueError(f"localhost targets are forbidden: {url}")
-    if allow_hosts is not None and host.lower() not in allow_hosts:
-        raise ValueError(f"redirect/host not on allow-list: {host}")
-
-    try:
-        infos = socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
-    except socket.gaierror as exc:
-        raise ValueError(f"DNS resolution failed for {host}: {exc}") from exc
-    if not infos:
-        raise ValueError(f"DNS resolution returned no addresses for {host}")
-    for info in infos:
-        ip = info[4][0]
-        if not is_public_ip(ip):
-            raise ValueError(f"resolved to non-public IP {ip} for {host}")
-
-
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    """Force callers to validate each hop (SSRF-safe redirect handling)."""
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001
-        return None
-
-
-_OPENER = urllib.request.build_opener(NoRedirect)
-
-
-def fetch_https(
-    url: str,
-    *,
-    kind: str,
-    timeout: float,
-    origin_host: str,
-) -> FetchResult:
-    allow_hosts = {origin_host.lower()}
-    current = url
-    try:
-        for _ in range(MAX_REDIRECTS + 1):
-            assert_safe_https_url(current, allow_hosts=allow_hosts)
-            request = urllib.request.Request(
-                current,
-                headers={
-                    "User-Agent": USER_AGENT,
-                    "Accept": "text/plain,text/html,application/json;q=0.9,*/*;q=0.1",
-                },
-                method="GET",
-            )
-            try:
-                with _OPENER.open(request, timeout=timeout) as response:
-                    status = getattr(response, "status", None) or response.getcode()
-                    raw = response.read(MAX_BODY_BYTES[kind] + 1)
-                    if len(raw) > MAX_BODY_BYTES[kind]:
-                        return FetchResult(
-                            url=url,
-                            status_code=status,
-                            body=None,
-                            error=f"body exceeds {MAX_BODY_BYTES[kind]} bytes",
-                            final_url=current,
-                        )
-                    charset = response.headers.get_content_charset() or "utf-8"
-                    body = raw.decode(charset, errors="replace")
-                    return FetchResult(
-                        url=url,
-                        status_code=status,
-                        body=body,
-                        final_url=current,
-                    )
-            except urllib.error.HTTPError as exc:
-                if exc.code in {301, 302, 303, 307, 308}:
-                    location = exc.headers.get("Location")
-                    if not location:
-                        return FetchResult(
-                            url=url,
-                            status_code=exc.code,
-                            body=None,
-                            error="redirect without Location",
-                            final_url=current,
-                        )
-                    current = urljoin(current, location)
-                    continue
-                raw = exc.read(MAX_BODY_BYTES[kind]) if exc.fp else b""
-                charset = "utf-8"
-                if exc.headers:
-                    charset = exc.headers.get_content_charset() or "utf-8"
-                body = raw.decode(charset, errors="replace") if raw else None
-                return FetchResult(
-                    url=url,
-                    status_code=exc.code,
-                    body=body,
-                    final_url=current,
-                )
-        return FetchResult(
-            url=url,
-            status_code=None,
-            body=None,
-            error=f"too many redirects (>{MAX_REDIRECTS})",
-        )
-    except Exception as exc:  # noqa: BLE001 — surface as fetch error
-        return FetchResult(url=url, status_code=None, body=None, error=str(exc))
 
 
 def load_fixture(fixture_dir: Path) -> dict[str, FetchResult]:
@@ -269,31 +129,6 @@ def load_fixture(fixture_dir: Path) -> dict[str, FetchResult]:
     return results
 
 
-def extract_jsonld_types(html_text: str) -> list[str]:
-    types: list[str] = []
-    for match in JSONLD_SCRIPT_RE.finditer(html_text):
-        raw = match.group(1).strip()
-        if not raw:
-            continue
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError:
-            types.append("(invalid-json)")
-            continue
-        nodes = data if isinstance(data, list) else [data]
-        if isinstance(data, dict) and "@graph" in data and isinstance(data["@graph"], list):
-            nodes = data["@graph"]
-        for node in nodes:
-            if not isinstance(node, dict):
-                continue
-            node_type = node.get("@type")
-            if isinstance(node_type, list):
-                types.extend(str(item) for item in node_type)
-            elif node_type:
-                types.append(str(node_type))
-    return types
-
-
 def score_l0(html_fetch: FetchResult) -> LayerResult:
     if html_fetch.error:
         return LayerResult("fail", [f"homepage fetch error: {html_fetch.error}"])
@@ -302,75 +137,90 @@ def score_l0(html_fetch: FetchResult) -> LayerResult:
             "fail",
             [f"homepage HTTP {html_fetch.status_code}"],
         )
-    body = html_fetch.body
-    evidence: list[str] = []
-    title = TITLE_RE.search(body)
-    h1 = H1_RE.search(body)
-    canonical = CANONICAL_RE.search(body)
-    meta_desc = META_DESC_RE.search(body)
-    if title:
-        evidence.append(f"title: {strip_tags(title.group(1))[:120]}")
-    else:
-        evidence.append("missing <title>")
-    if h1:
-        evidence.append(f"h1: {strip_tags(h1.group(1))[:120]}")
-    else:
-        evidence.append("missing <h1>")
-    if canonical:
-        evidence.append(f"canonical: {canonical.group(1)}")
-    else:
-        evidence.append("no canonical link")
-    if meta_desc:
-        evidence.append("meta description present")
-    else:
-        evidence.append("no meta description")
+    signals = page_signals(html_fetch.body)
+    has_title = signals.title is not None
+    has_h1 = signals.h1 is not None
+    has_canonical = signals.canonical is not None
+    evidence = [
+        f"title: {signals.title[:MAX_TEXT_EVIDENCE_CHARS]}" if has_title else "missing <title>",
+        f"h1: {signals.h1[:MAX_TEXT_EVIDENCE_CHARS]}" if has_h1 else "missing <h1>",
+        f"canonical: {signals.canonical[:MAX_URL_EVIDENCE_CHARS]}"
+        if has_canonical
+        else "no canonical link",
+        "meta description present" if signals.has_meta_description else "no meta description",
+    ]
 
-    missing_core = (not title) or (not h1)
-    status = "fail" if missing_core else ("ok" if canonical and meta_desc else "weak")
+    if not (has_title and has_h1):
+        status = "fail"
+    else:
+        status = "ok" if has_canonical and signals.has_meta_description else "weak"
     return LayerResult(
         status,
         evidence,
         {
-            "has_title": bool(title),
-            "has_h1": bool(h1),
-            "has_canonical": bool(canonical),
-            "has_meta_description": bool(meta_desc),
+            "has_title": has_title,
+            "has_h1": has_h1,
+            "has_canonical": has_canonical,
+            "has_meta_description": signals.has_meta_description,
         },
     )
+
+
+def robots_directives(body: str) -> list[tuple[str, str]]:
+    """(field, value) pairs with comments stripped; field names lower-cased."""
+    directives: list[tuple[str, str]] = []
+    for line in body.lstrip(BYTE_ORDER_MARK).splitlines():
+        field_name, separator, value = line.split("#", 1)[0].partition(":")
+        if separator:
+            directives.append((field_name.strip().lower(), value.strip()))
+    return directives
+
+
+def has_llms_comment(body: str) -> bool:
+    return any("llms.txt" in line.partition("#")[2].lower() for line in body.splitlines())
 
 
 def score_l1(robots: FetchResult) -> LayerResult:
     if robots.error:
         return LayerResult("fail", [f"robots fetch error: {robots.error}"])
-    if robots.status_code == 404 or robots.body is None:
-        return LayerResult("fail", ["robots.txt missing (404)"])
-    if robots.status_code != 200:
-        return LayerResult("weak", [f"robots.txt HTTP {robots.status_code}"])
+    status = robots.status_code
+    # RFC 9309 2.3.1: 4xx = unavailable (allow-all), 5xx = unreachable (disallow-all).
+    if status is not None and 500 <= status < 600:
+        return LayerResult(
+            "fail",
+            [f"robots.txt HTTP {status}: crawlers must assume a complete disallow (RFC 9309)"],
+        )
+    if status is not None and 400 <= status < 500:
+        return LayerResult(
+            "weak",
+            [f"robots.txt HTTP {status}: no crawl policy; crawlers treat it as allow-all (RFC 9309)"],
+        )
+    if status != 200 or robots.body is None:
+        return LayerResult("weak", [f"robots.txt HTTP {status}"])
 
-    body = robots.body
-    sitemaps = SITEMAP_LINE_RE.findall(body)
-    agents = [match for match in USER_AGENT_LINE_RE.findall(body)]
-    ai_hits = sorted(
-        {
-            agent
-            for agent in agents
-            if any(token.lower() == agent.lower() for token in KNOWN_AI_AGENTS)
-        }
-    )
+    directives = robots_directives(robots.body)
+    sitemap_values = [value for name, value in directives if name == "sitemap" and value]
+    sitemaps = [value for value in sitemap_values if value.lower().startswith(("https://", "http://"))]
+    agents = [value for name, value in directives if name == "user-agent" and value]
+    known = {token.lower() for token in KNOWN_AI_AGENTS}
+    ai_hits = sorted({agent for agent in agents if agent.lower() in known})
     evidence = [
         f"Sitemap lines: {len(sitemaps)}",
         f"User-agent groups: {len(agents)}",
     ]
+    if len(sitemap_values) > len(sitemaps):
+        evidence.append(
+            f"ignored {len(sitemap_values) - len(sitemaps)} non-absolute Sitemap value(s)"
+        )
     if ai_hits:
         evidence.append("AI-related user-agents: " + ", ".join(ai_hits))
     else:
         evidence.append("no explicit AI user-agent groups (may inherit User-agent: *)")
-    if "# " in body and "llms.txt" in body.lower():
+    if has_llms_comment(robots.body):
         evidence.append("contains llms.txt comment (editor note, not a crawler directive)")
 
-    status = "ok" if sitemaps else "weak"
     return LayerResult(
-        status,
+        "ok" if sitemaps else "weak",
         evidence,
         {"sitemaps": sitemaps, "ai_user_agents": ai_hits, "user_agents": agents},
     )
@@ -382,32 +232,35 @@ def score_l2(llms: FetchResult) -> LayerResult:
     classification = classify_llms(llms.body, status_code=llms.status_code)
     evidence: list[str] = [f"classification: {classification}"]
     details: dict[str, Any] = {"classification": classification}
-    if llms.body:
+    if classification == "unavailable":
+        evidence.append(f"HTTP {llms.status_code}: could not assess /llms.txt")
+        details["http_status"] = llms.status_code
+    elif classification != "missing" and llms.body:
         signals = dump_signals(llms.body)
         size = len(llms.body.encode("utf-8"))
         links = absolute_https_links(llms.body)
+        markdown_links = markdown_variant_links(links)
         evidence.append(f"size_bytes: {size}")
         evidence.append(f"https_links: {len(links)}")
+        evidence.append(f"markdown_links: {len(markdown_links)}")
         if signals:
             evidence.append("dump_signals: " + ", ".join(signals))
         details.update(
             {
                 "size_bytes": size,
                 "https_links": len(links),
+                "markdown_links": len(markdown_links),
                 "dump_signals": signals,
             }
         )
-        if size > 8 * 1024 and classification == "curated":
+        if size > MAX_CURATED_BYTES and classification == "curated":
             evidence.append("warn: curated heuristic prefers ≲ 8 KB")
+        if links and not markdown_links and classification == "curated":
+            evidence.append(
+                "info: no .md link variants (llmstxt.org suggests them where the site publishes them)"
+            )
 
-    status_map = {
-        "curated": "ok",
-        "missing": "fail",
-        "empty": "fail",
-        "dump": "fail",
-        "malformed": "weak",
-    }
-    return LayerResult(status_map[classification], evidence, details)
+    return LayerResult(L2_STATUS[classification], evidence, details)
 
 
 def score_l3(html_fetch: FetchResult) -> LayerResult:
@@ -415,15 +268,20 @@ def score_l3(html_fetch: FetchResult) -> LayerResult:
         return LayerResult("fail", [f"homepage fetch error: {html_fetch.error}"])
     if html_fetch.status_code != 200 or not html_fetch.body:
         return LayerResult("fail", ["homepage unavailable for JSON-LD scan"])
-    types = extract_jsonld_types(html_fetch.body)
+    blocks = page_signals(html_fetch.body).jsonld_blocks
+    types = jsonld_types(blocks)
     if not types:
         return LayerResult("fail", ["no application/ld+json blocks found"])
-    if "(invalid-json)" in types and len(set(types)) == 1:
+    if all(found == INVALID_JSONLD for found in types):
         return LayerResult("fail", ["JSON-LD present but invalid JSON"])
     evidence = ["@type values: " + ", ".join(sorted(set(types)))]
-    useful = {"Organization", "WebSite", "WebPage", "Article", "BlogPosting", "Person", "FAQPage"}
-    overlap = sorted(useful.intersection(types))
-    status = "ok" if overlap else "weak"
+    overlap = sorted(USEFUL_JSONLD_TYPES.intersection(types))
+    has_placeholders = any(
+        marker in block for block in blocks for marker in JSONLD_PLACEHOLDER_MARKERS
+    )
+    status = "ok" if overlap and not has_placeholders else "weak"
+    if has_placeholders:
+        evidence.append("warn: placeholder values left in JSON-LD (TODO_REPLACE / example.com)")
     if overlap:
         evidence.append("recognized types: " + ", ".join(overlap))
     else:
@@ -440,6 +298,11 @@ def build_actions(layers: dict[str, LayerResult]) -> list[str]:
         actions.append(
             "Replace plugin dump /llms.txt with a curated map "
             "(docs/replace-rank-math-llms.md)."
+        )
+    elif l2 == "unavailable":
+        actions.append(
+            f"Find out why /llms.txt returns HTTP {layers['L2'].details.get('http_status')} "
+            "(server error or bot blocking) and re-run."
         )
     if layers["L3"].status in {"fail", "weak"}:
         actions.append("Add factual JSON-LD (Organization/WebSite/Article) via /draft-json-ld.")
@@ -470,25 +333,35 @@ def audit_from_fetches(target: str, mode: str, fetches: dict[str, FetchResult]) 
 
 
 def audit_live(url: str, timeout: float) -> AuditReport:
-    parsed = urlparse(url if "://" in url else f"https://{url}")
-    if parsed.scheme != "https":
-        raise ValueError("target must be an https URL")
-    origin = f"https://{parsed.hostname}"
-    host = parsed.hostname or ""
-    assert_safe_https_url(origin + "/")
+    target = url if "://" in url else f"https://{url}"
+    # Validate what the user typed, so credentials or a port are refused, not dropped.
+    assert_safe_https_url(target)
+    host = urlparse(target).hostname or ""
+    origin = f"https://[{host}]" if ":" in host else f"https://{host}"
+    paths = {"robots": "/robots.txt", "llms": "/llms.txt", "html": "/"}
     fetches = {
-        "robots": fetch_https(f"{origin}/robots.txt", kind="robots", timeout=timeout, origin_host=host),
-        "llms": fetch_https(f"{origin}/llms.txt", kind="llms", timeout=timeout, origin_host=host),
-        "html": fetch_https(origin + "/", kind="html", timeout=timeout, origin_host=host),
+        kind: fetch_https(
+            origin + path,
+            max_bytes=MAX_BODY_BYTES[kind],
+            timeout=timeout,
+            origin_host=host,
+        )
+        for kind, path in paths.items()
     }
     return audit_from_fetches(origin + "/", "live", fetches)
 
 
+def md_cell(value: str) -> str:
+    """Neutralize untrusted text for a single-line Markdown table cell."""
+    collapsed = " ".join(value.split())
+    return "".join(MARKDOWN_ESCAPES.get(char, char) for char in collapsed if char.isprintable())
+
+
 def render_markdown(report: AuditReport) -> str:
     lines = [
-        f"# AIO lint report",
+        "# AIO lint report",
         "",
-        f"Target: `{report.target}`",
+        f"Target: `{md_cell(report.target)}`",
         f"Mode: `{report.mode}`",
         f"Overall: `{'ok' if report.ok else 'fail'}`",
         "",
@@ -497,7 +370,7 @@ def render_markdown(report: AuditReport) -> str:
     ]
     for name in ("L0", "L1", "L2", "L3"):
         layer = report.layers[name]
-        evidence = "<br>".join(layer.evidence) if layer.evidence else "—"
+        evidence = "<br>".join(md_cell(item) for item in layer.evidence) or "—"
         lines.append(f"| {name} | {layer.status} | {evidence} |")
     lines.extend(["", "## Top actions", ""])
     for index, action in enumerate(report.top_actions, start=1):
@@ -541,7 +414,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--expect-l2",
-        choices=("missing", "empty", "dump", "curated", "malformed"),
+        choices=L2_CLASSIFICATIONS,
         help="for fixtures/CI: require this L2 classification (exit 1 on mismatch)",
     )
     parser.add_argument(
@@ -566,9 +439,6 @@ def main(argv: list[str] | None = None) -> int:
                 load_fixture(fixture_dir),
             )
         else:
-            if not args.url:
-                print("url or --fixture is required", file=sys.stderr)
-                return 2
             report = audit_live(args.url, timeout=args.timeout)
     except ValueError as exc:
         print(f"refused: {exc}", file=sys.stderr)

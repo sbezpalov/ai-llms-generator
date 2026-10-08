@@ -29,7 +29,8 @@ Audience: owners of blogs, docs, and corporate sites (AIO). Context:
 - Cursor Agent Skills (YAML frontmatter)
 - Stdlib CLI: `scripts/aio_lint.py` (+ `aio_heuristics.py`) — live/fixture lint
 - AI tooling scaffold v2: `AGENTS.md` + redirects
-- CI: `check_package.py` + aio-lint fixtures; optional `aio-lint-live`
+- CI: `unittest` (`tests/`) + `check_package.py` + aio-lint fixtures; optional
+  `aio-lint-live`
 - License: MIT; release **v1.0.0**
 
 ## 3. Layout
@@ -43,8 +44,11 @@ Audience: owners of blogs, docs, and corporate sites (AIO). Context:
 | `examples/` | Report format, dump antipattern, aio-lint fixtures |
 | `docs/replace-rank-math-llms.md` | Replace plugin dump with curated `/llms.txt` |
 | `docs/aio-lint.md` | CLI/CI AIO linter |
-| `scripts/aio_lint.py` | SSRF-safe live/fixture linter |
+| `scripts/aio_lint.py` | SSRF-aware live/fixture linter (CLI, scoring, report) |
+| `scripts/aio_net.py` | Pinned, validated https fetching for the linter |
+| `scripts/aio_html.py` | Linear-time homepage signal / JSON-LD extraction |
 | `scripts/aio_heuristics.py` | Shared dump/curation heuristics |
+| `tests/` | Offline stdlib `unittest` suite for the scripts |
 | `scripts/install-skill.*` | Install full suite into `.cursor/skills/` |
 | `scripts/check_package.py` | CI smoke (includes aio-lint fixtures) |
 | `.github/workflows/ci.yml` | Package + installer + aio-lint fixtures |
@@ -89,7 +93,8 @@ Site ops: replace the Rank Math dump with curated `example-llms.txt` using
 ## 7. Definition of Done
 
 - [ ] Secrets not in the commit; local changes only.
-- [ ] `python scripts/check_package.py` green; `README.md` ↔ `README.ru.md` and
+- [ ] `python -m unittest discover -s tests -t .` and
+  `python scripts/check_package.py` green; `README.md` ↔ `README.ru.md` and
   `PROMPT.md` ↔ `PROMPT.ru.md` aligned in meaning.
 - [ ] Skills stay consistent with orchestrator `aio-site-audit`.
 - [ ] Diff reviewed; rollback = revert commit.

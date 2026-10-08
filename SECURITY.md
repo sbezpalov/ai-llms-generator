@@ -16,10 +16,22 @@ dependencies.
 It does not use the network except for launching aio-lint against **offline
 fixtures**.
 
-`scripts/aio_lint.py` **may** use the network in live mode. Limits: `https`
-only, port 443, public DNS IPs (no localhost / private / link-local), same-host
-redirects, size and timeout caps. Do not pass staging URLs or lint internal
-hosts.
+`scripts/aio_lint.py` **may** use the network in live mode
+(`scripts/aio_net.py`). Limits: `https` only, port 443, globally routable
+addresses only (no localhost / private / link-local / CGNAT / special-purpose
+ranges), same-host redirects re-validated on every hop, body-size caps, and a
+per-socket plus whole-fetch timeout. Each connection is pinned to the address
+that was checked, so a second DNS answer cannot move it (DNS rebinding), and
+proxy environment variables are ignored. Page content is scanned in linear
+time with bounded windows (`scripts/aio_html.py`; no backtracking regular
+expressions and no `html.parser`, which is quadratic on hostile markup in older
+Python releases) and escaped before it is written to the Markdown report. Do
+not pass staging URLs or lint internal hosts.
+
+Known limitations: the linter is a best-effort research tool, not a sandbox.
+It trusts the system CA store and the resolver of the machine it runs on, and
+its HTML scanner is a signal extractor, not a conforming HTML parser. Keep the
+CI job timeout.
 
 ## Risks to be aware of
 

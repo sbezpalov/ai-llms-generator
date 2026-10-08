@@ -5,15 +5,18 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
-
-from aio_heuristics import LLMS_LINK_RE, dump_signals  # noqa: E402
+from aio_heuristics import (
+    LLMS_LINK_RE,
+    MAX_CURATED_BYTES,
+    MAX_NOTE_CHARS,
+    MAX_SECTION_LINKS,
+    dump_signals,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -49,7 +52,14 @@ REQUIRED = [
     "docs/aio-lint.md",
     "scripts/check_package.py",
     "scripts/aio_heuristics.py",
+    "scripts/aio_html.py",
+    "scripts/aio_net.py",
     "scripts/aio_lint.py",
+    "tests/__init__.py",
+    "tests/test_aio_html.py",
+    "tests/test_aio_lint.py",
+    "tests/test_aio_net.py",
+    "tests/test_workflows.py",
     "scripts/install-skill.sh",
     "scripts/install-skill.ps1",
     "examples/aio-lint-fixtures/curated-site/robots.txt",
@@ -76,6 +86,7 @@ SKILL_NAMES = {
 }
 
 SKILL_COMMANDS = tuple(SKILL_NAMES.values())
+LIST_BULLETS = frozenset({"- ", "* ", "+ "})
 FRONTMATTER_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 HIGH_CONFIDENCE_SECRET_PATTERNS = (
@@ -168,7 +179,7 @@ def validate_llms_shape(rel: str, text: str, *, is_template: bool = False) -> No
             links_by_section[current_section] = []
             continue
 
-        if line.startswith("- "):
+        if line.lstrip()[:2] in LIST_BULLETS:
             if current_section is None:
                 fail(f"{rel}:{line_number}: link entry appears before an H2 section")
             match = LLMS_LINK_RE.fullmatch(line)
@@ -183,7 +194,7 @@ def validate_llms_shape(rel: str, text: str, *, is_template: bool = False) -> No
             if url in seen_urls:
                 fail(f"{rel}:{line_number}: duplicate URL: {url}")
             notes = match.group(3)
-            if notes and len(notes) > 160:
+            if notes and len(notes) > MAX_NOTE_CHARS:
                 fail(f"{rel}:{line_number}: link description exceeds 160 characters")
             seen_urls.add(url)
             links_by_section[current_section].append(url)
@@ -194,7 +205,7 @@ def validate_llms_shape(rel: str, text: str, *, is_template: bool = False) -> No
     if empty_sections:
         fail(f"{rel}: H2 sections must contain links: {', '.join(empty_sections)}")
     oversized_sections = [
-        name for name, links in links_by_section.items() if len(links) > 12
+        name for name, links in links_by_section.items() if len(links) > MAX_SECTION_LINKS
     ]
     if oversized_sections:
         fail(
@@ -214,7 +225,7 @@ def validate_llms_shape(rel: str, text: str, *, is_template: bool = False) -> No
         fail(f"{rel}: Last updated must use YYYY-MM-DD")
 
     size = len(text.encode("utf-8"))
-    if not is_template and size > 8 * 1024:
+    if not is_template and size > MAX_CURATED_BYTES:
         fail(f"{rel}: curated example exceeds project heuristic (~8 KB): {size}")
 
 
@@ -326,8 +337,6 @@ def validate_aio_lint_cli() -> None:
         if not (ROOT / rel).is_file():
             fail(f"missing {rel}")
     # Offline fixture smoke (no network).
-    import subprocess
-
     curated = subprocess.run(
         [
             sys.executable,

@@ -6,13 +6,22 @@ offline fixture). Ships in **ai-llms-generator v1.0.0**.
 | Layer | Check |
 |-------|--------|
 | L0 | Homepage title / H1 / canonical / meta description |
-| L1 | `robots.txt` reachability, `Sitemap:`, AI user-agent hints |
-| L2 | `/llms.txt` missing / curated / dump (Rank Math-style heuristics) |
+| L1 | `robots.txt` reachability, absolute `Sitemap:`, AI user-agent hints |
+| L2 | `/llms.txt` missing / unavailable / empty / malformed / dump / curated |
 | L3 | Homepage `application/ld+json` `@type` presence |
 
 It does **not** promise rankings, citations, or AI-answer inclusion. Fetched
-HTML/text is untrusted data. SSRF controls: https-only, port 443, public DNS
-IPs, same-host redirects, size + timeout limits.
+HTML/text is untrusted data. SSRF controls: https-only, port 443, globally
+routable addresses only, connections pinned to the validated address (no DNS
+rebinding), same-host redirects re-validated per hop, proxy environment
+ignored, size + per-socket + whole-fetch time limits. Page signals are
+extracted by a linear-time scanner, and evidence is escaped in the Markdown
+report. See [SECURITY.md](../SECURITY.md) for known limitations.
+
+L2 also reports `markdown_links`: how many links point to `.md` page variants,
+which the llmstxt.org proposal suggests where a site publishes them. It is
+informational only — it never changes the L2 status, and the linter does not
+fetch the linked pages.
 
 ## Usage
 
@@ -27,7 +36,34 @@ python scripts/aio_lint.py --fixture examples/aio-lint-fixtures/dump-site --expe
 ```
 
 Exit codes: `0` success / expected classification, `1` lint or expect mismatch,
-`2` usage or refused unsafe URL.
+`2` usage or refused unsafe URL. Without `--strict` a report with failing
+layers still exits `0`.
+
+Status notes:
+
+- **L1** follows RFC 9309: a `4xx` robots.txt means "no policy, crawlers treat
+  it as allow-all" (`weak`); a `5xx` means crawlers must assume a complete
+  disallow (`fail`). Trailing `#` comments are ignored and only absolute
+  `Sitemap:` URLs count.
+- **L2** never classifies an error page: `404`/`410` is `missing` (`fail`),
+  any other non-200 is `unavailable` (`weak` — a 403 often just means the
+  linter was blocked). Link entries are recognised with `-`, `*` or `+`
+  bullets; the 20-link / 12-per-section / 8 KB thresholds are project
+  heuristics, not llmstxt.org rules.
+- The target may be an origin or any URL on it; only the origin is audited.
+  Credentials and non-default ports are refused rather than dropped.
+
+`CERTIFICATE_VERIFY_FAILED` on every layer means the local Python has no CA
+bundle (common with python.org builds on macOS): run that install's
+`Install Certificates.command`, or set `SSL_CERT_FILE` to a CA bundle.
+
+## Tests
+
+```bash
+python -m unittest discover -s tests -t .
+```
+
+Offline: DNS and connections are faked; no request leaves the machine.
 
 ## GitHub Actions
 

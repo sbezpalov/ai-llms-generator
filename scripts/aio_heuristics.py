@@ -6,7 +6,36 @@ from __future__ import annotations
 import re
 from urllib.parse import urlparse
 
-LLMS_LINK_RE = re.compile(r"^- \[([^\]]+)\]\(([^)]+)\)(?::\s*(.*))?$")
+# Project curation heuristics, not llmstxt.org requirements.
+MAX_TOTAL_LINKS = 20
+MAX_SECTION_LINKS = 12
+MAX_CURATED_BYTES = 8 * 1024
+MAX_NOTE_CHARS = 160
+
+MISSING_STATUS_CODES = frozenset({404, 410})
+BYTE_ORDER_MARK = "﻿"
+
+# A list entry `- [title](url): notes`. Tolerates `*`/`+` bullets, indentation,
+# one level of brackets in the title or parentheses in the URL, `<url>`, a
+# quoted link title, and a dash instead of the colon. Groups: title, url, notes.
+LLMS_LINK_RE = re.compile(
+    r"^\s*[-*+]\s+"
+    r"\[((?:[^\[\]\\]|\\.|\[[^\[\]]*\])+)\]"
+    r"\(\s*<?((?:[^()\s<>]|\([^()\s<>]*\))+)>?(?:\s+\"[^\"]*\")?\s*\)"
+    r"\s*(?:[:\-–—]\s*)?(.*)$"
+)
+H2_RE = re.compile(r"^##\s+\S")
+
+
+def section_link_counts(text: str) -> list[int]:
+    """Link entries per block: the preamble first, then each H2 section."""
+    counts = [0]
+    for line in text.splitlines():
+        if H2_RE.match(line):
+            counts.append(0)
+        elif LLMS_LINK_RE.fullmatch(line):
+            counts[-1] += 1
+    return counts
 
 
 def dump_signals(text: str) -> list[str]:
@@ -18,29 +47,25 @@ def dump_signals(text: str) -> list[str]:
     if re.search(r"^##\s+Sitemaps\s*$", text, re.MULTILINE | re.IGNORECASE):
         signals.append("sitemaps-section")
 
-    link_count = sum(1 for line in text.splitlines() if LLMS_LINK_RE.fullmatch(line))
-    if link_count > 20:
+    counts = section_link_counts(text)
+    link_count = sum(counts)
+    if link_count > MAX_TOTAL_LINKS:
         signals.append(f"too-many-links:{link_count}")
-
-    section_links = 0
-    for line in text.splitlines():
-        if line.startswith("## "):
-            if section_links > 12:
-                signals.append("oversized-section")
-                break
-            section_links = 0
-        elif LLMS_LINK_RE.fullmatch(line):
-            section_links += 1
-    else:
-        if section_links > 12:
-            signals.append("oversized-section")
+    if max(counts) > MAX_SECTION_LINKS:
+        signals.append("oversized-section")
     return signals
 
 
 def classify_llms(text: str | None, *, status_code: int | None = None) -> str:
-    """Return missing | empty | dump | curated | malformed."""
-    if status_code == 404 or text is None:
+    """Return missing | unavailable | empty | dump | curated | malformed."""
+    if status_code in MISSING_STATUS_CODES:
         return "missing"
+    if status_code not in (None, 200):
+        # An error page is not the file: never classify it from its body.
+        return "unavailable"
+    if text is None:
+        return "missing"
+    text = text.lstrip(BYTE_ORDER_MARK)
     if not text.strip():
         return "empty"
     if dump_signals(text):
@@ -49,7 +74,7 @@ def classify_llms(text: str | None, *, status_code: int | None = None) -> str:
         return "malformed"
     if not re.search(r"^> \S", text, re.MULTILINE):
         return "malformed"
-    if "## " not in text:
+    if not any(H2_RE.match(line) for line in text.splitlines()):
         return "malformed"
     return "curated"
 
@@ -65,3 +90,8 @@ def absolute_https_links(text: str) -> list[str]:
         if parsed.scheme == "https" and parsed.netloc:
             urls.append(url)
     return urls
+
+
+def markdown_variant_links(urls: list[str]) -> list[str]:
+    """Links whose path ends in .md (llmstxt.org Markdown page variants)."""
+    return [url for url in urls if urlparse(url).path.lower().endswith(".md")]

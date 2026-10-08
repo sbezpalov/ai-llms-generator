@@ -28,7 +28,8 @@ Suite не обещает индексацию, цитирование, попа
 - Cursor Agent Skills (YAML frontmatter)
 - Stdlib CLI: `scripts/aio_lint.py` (+ `aio_heuristics.py`) — live/fixture lint
 - AI tooling scaffold v2: `AGENTS.md` + редиректы
-- CI: `check_package.py` + aio-lint fixtures; опционально `aio-lint-live`
+- CI: `unittest` (`tests/`) + `check_package.py` + aio-lint fixtures; опционально
+  `aio-lint-live`
 - Лицензия: MIT; релиз **v1.0.0**
 
 ## 3. Структура
@@ -42,8 +43,11 @@ Suite не обещает индексацию, цитирование, попа
 | `examples/` | Report format, dump antipattern, aio-lint fixtures |
 | `docs/replace-rank-math-llms.md` | Как заменить plugin dump на curated `/llms.txt` |
 | `docs/aio-lint.md` | CLI/CI AIO linter |
-| `scripts/aio_lint.py` | SSRF-safe live/fixture linter |
+| `scripts/aio_lint.py` | SSRF-aware live/fixture linter (CLI, оценка, отчёт) |
+| `scripts/aio_net.py` | Проверенные https-запросы с привязкой к адресу |
+| `scripts/aio_html.py` | Линейный по времени разбор главной страницы / JSON-LD |
 | `scripts/aio_heuristics.py` | Shared dump/curation heuristics |
+| `tests/` | Offline-набор stdlib `unittest` для скриптов |
 | `scripts/install-skill.*` | Установка всего suite в `.cursor/skills/` |
 | `scripts/check_package.py` | CI smoke (включает fixture-прогон aio-lint) |
 | `.github/workflows/ci.yml` | Package + installer + aio-lint fixtures |
@@ -89,7 +93,8 @@ Site ops: заменить Rank Math dump на curated `example-llms.txt` по
 ## 7. Definition of Done
 
 - [ ] Секреты не в коммите; только локальные правки.
-- [ ] `python scripts/check_package.py` зелёный; `README.md` ↔ `README.ru.md` и
+- [ ] `python -m unittest discover -s tests -t .` и
+  `python scripts/check_package.py` зелёные; `README.md` ↔ `README.ru.md` и
   `PROMPT.md` ↔ `PROMPT.ru.md` синхронны по смыслу.
 - [ ] Skills согласованы с оркестратором `aio-site-audit`.
 - [ ] Diff отревьюен; откат = revert commit.

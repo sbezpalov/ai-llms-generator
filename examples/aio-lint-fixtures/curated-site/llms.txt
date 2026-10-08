@@ -8,7 +8,7 @@ Last updated: 2026-07-27
 
 ## Docs
 
-- [Overview](https://fixture.example/docs/): Product overview page.
+- [Overview](https://fixture.example/docs/index.html.md): Product overview page (Markdown variant).
 - [API](https://fixture.example/api/): API reference entrypoint.
 
 ## About

@@ -24,12 +24,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Lint public site
+        # Inputs reach the shell only as environment variables, never as script text.
+        env:
+          AIO_URL: ${{ inputs.url }}
+          AIO_STRICT: ${{ inputs.strict }}
         run: |
           set -euo pipefail
-          args=(scripts/aio_lint.py "${{ inputs.url }}" --json)
-          if [ "${{ inputs.strict }}" = "true" ]; then
+          args=(scripts/aio_lint.py --json)
+          if [ "$AIO_STRICT" = "true" ]; then
             args+=(--strict)
           fi
-          python3 "${args[@]}"
+          python3 "${args[@]}" -- "$AIO_URL"
