@@ -50,6 +50,7 @@ REQUIRED = [
     "examples/llms-dump-antipattern.txt",
     "docs/replace-rank-math-llms.md",
     "docs/aio-lint.md",
+    "docs/markdown-variants.md",
     "scripts/check_package.py",
     "scripts/aio_heuristics.py",
     "scripts/aio_html.py",

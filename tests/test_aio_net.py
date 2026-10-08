@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import os
 import socket
+import threading
+import time
 import unittest
 from email.message import Message
 from unittest import mock
@@ -260,6 +262,36 @@ class FetchHttpsTests(FetchHarness):
 
         self.assertIn("total fetch time", result.error)
         self.assertEqual(self.dialled, [])
+
+    def test_stalled_response_headers_are_cut_off_at_the_deadline(self) -> None:
+        released = threading.Event()
+
+        class StalledConnection(FakeConnection):
+            sock = mock.Mock(shutdown=lambda how: released.set())
+
+            def getresponse(self) -> FakeResponse:
+                released.wait(10)
+                raise OSError("connection aborted")
+
+        with mock.patch("aio_net.open_connection", lambda host, ip, timeout: StalledConnection(FakeResponse())), \
+                mock.patch("aio_net.socket.getaddrinfo", return_value=addrinfo(PUBLIC_IP)):
+            started = time.monotonic()
+            result = aio_net.fetch_https(
+                f"https://{HOST}/", max_bytes=1024, timeout=0.05, origin_host=HOST
+            )
+
+        self.assertLess(time.monotonic() - started, 5.0)
+        self.assertEqual(result.error, aio_net.DEADLINE_MESSAGE)
+
+    def test_truncate_keeps_the_head_of_a_large_body(self) -> None:
+        self.start([FakeResponse(200, b"x" * 5000)])
+
+        result = aio_net.fetch_https(
+            f"https://{HOST}/big", max_bytes=1000, timeout=5.0, origin_host=HOST, truncate=True
+        )
+
+        self.assertEqual((result.status_code, result.error), (200, None))
+        self.assertLessEqual(len(result.body), 1000 + aio_net.READ_CHUNK_BYTES)
 
     def test_tries_a_bounded_number_of_addresses(self) -> None:
         many = [f"93.184.216.{n}" for n in range(1, 20)]

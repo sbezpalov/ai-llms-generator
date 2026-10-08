@@ -12,6 +12,11 @@ on:
         required: false
         default: true
         type: boolean
+      check_links:
+        description: Also fetch the same-origin links listed in llms.txt
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -32,10 +37,14 @@ jobs:
         env:
           AIO_URL: ${{ inputs.url }}
           AIO_STRICT: ${{ inputs.strict }}
+          AIO_CHECK_LINKS: ${{ inputs.check_links }}
         run: |
           set -euo pipefail
           args=(scripts/aio_lint.py --json)
           if [ "$AIO_STRICT" = "true" ]; then
             args+=(--strict)
+          fi
+          if [ "$AIO_CHECK_LINKS" = "true" ]; then
+            args+=(--check-links)
           fi
           python3 "${args[@]}" -- "$AIO_URL"

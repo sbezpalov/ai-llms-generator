@@ -13,6 +13,7 @@ import http.client
 import ipaddress
 import socket
 import ssl
+import threading
 import time
 from dataclasses import dataclass
 from urllib.parse import urljoin, urlparse
@@ -160,9 +161,9 @@ def _connect_pinned(
 
 
 def _read_capped(
-    response: http.client.HTTPResponse, max_bytes: int, deadline: float
+    response: http.client.HTTPResponse, max_bytes: int, deadline: float, truncate: bool
 ) -> bytes | None:
-    """Read the body; None when it is larger than max_bytes."""
+    """Read the body; when it exceeds max_bytes return its head (truncate) or None."""
     chunks: list[bytes] = []
     total = 0
     while True:
@@ -172,7 +173,7 @@ def _read_capped(
             return b"".join(chunks)
         total += len(chunk)
         if total > max_bytes:
-            return None
+            return b"".join(chunks) if truncate else None
         chunks.append(chunk)
 
 
@@ -183,6 +184,17 @@ def decode_body(raw: bytes, charset: str | None) -> str:
         return raw.decode(FALLBACK_CHARSET, errors="replace")
 
 
+def _abort(connection: http.client.HTTPSConnection) -> None:
+    """Wake a blocked read once the whole-fetch budget is spent."""
+    sock = getattr(connection, "sock", None)
+    if sock is None:
+        return
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass  # already closed: nothing left to interrupt
+
+
 def _fetch_hop(
     current: str,
     *,
@@ -190,12 +202,17 @@ def _fetch_hop(
     timeout: float,
     allow_hosts: set[str],
     deadline: float,
+    truncate: bool,
 ) -> _Hop:
     _remaining(deadline)
     ips = resolve_public_ips(current, allow_hosts=allow_hosts)
     parsed = urlparse(current)
     target = (parsed.path or "/") + (f"?{parsed.query}" if parsed.query else "")
     connection = _connect_pinned(parsed.hostname or "", ips, timeout, deadline)
+    # Socket timeouts are per operation; the watchdog bounds slow-drip headers too.
+    watchdog = threading.Timer(_remaining(deadline), _abort, [connection])
+    watchdog.daemon = True
+    watchdog.start()
     try:
         connection.request("GET", target, headers=REQUEST_HEADERS)
         response = connection.getresponse()
@@ -207,7 +224,7 @@ def _fetch_hop(
                     FetchResult(current, status, None, "redirect without Location", current)
                 )
             return _Hop(next_url=urljoin(current, location))
-        raw = _read_capped(response, max_bytes, deadline)
+        raw = _read_capped(response, max_bytes, deadline, truncate)
         if raw is None:
             return _Hop(
                 FetchResult(current, status, None, f"body exceeds {max_bytes} bytes", current)
@@ -216,6 +233,7 @@ def _fetch_hop(
         body = decode_body(raw, charset) if raw or status == 200 else None
         return _Hop(FetchResult(current, status, body, final_url=current))
     finally:
+        watchdog.cancel()
         connection.close()
 
 
@@ -225,8 +243,13 @@ def fetch_https(
     max_bytes: int,
     timeout: float,
     origin_host: str,
+    truncate: bool = False,
 ) -> FetchResult:
-    """GET a public https URL, staying on origin_host across redirects."""
+    """GET a public https URL, staying on origin_host across redirects.
+
+    A body over max_bytes is an error unless truncate is set, in which case
+    only its head is returned (enough to probe a link).
+    """
     allow_hosts = {origin_host.lower()}
     deadline = time.monotonic() + timeout * TOTAL_TIMEOUT_FACTOR
     current = url
@@ -238,6 +261,7 @@ def fetch_https(
                 timeout=timeout,
                 allow_hosts=allow_hosts,
                 deadline=deadline,
+                truncate=truncate,
             )
             if hop.result is not None:
                 result = hop.result
@@ -246,7 +270,8 @@ def fetch_https(
                 )
             current = hop.next_url or current
     except (OSError, ValueError, http.client.HTTPException) as exc:
-        return FetchResult(url=url, status_code=None, body=None, error=str(exc))
+        error = DEADLINE_MESSAGE if time.monotonic() >= deadline else str(exc)
+        return FetchResult(url=url, status_code=None, body=None, error=error)
     return FetchResult(
         url=url,
         status_code=None,

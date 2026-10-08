@@ -49,6 +49,10 @@ The project uses semantic versioning for public releases.
 
 - `aio-lint` L2 reports an informational `markdown_links` count
 - Offline `unittest` suite (`tests/`), run in CI
+- `aio-lint --check-links`: opt-in probe of same-origin `llms.txt` links that
+  reports broken links and `.md` links answering with HTML; also a
+  `check_links` input on the `aio-lint-live` workflow
+- `docs/markdown-variants.md`: how to publish Markdown page variants
 
 ### Security
 
@@ -66,8 +70,9 @@ The project uses semantic versioning for public releases.
   of interpolating them into the shell script; checkouts no longer persist
   the job token
 - `aio-lint`: the whole-fetch deadline also covers connecting, at most four
-  resolved addresses are tried, and an oversized number in JSON-LD no longer
-  aborts the audit
+  resolved addresses are tried, stalled response headers are cut off, and an
+  oversized number in JSON-LD no longer aborts the audit
+- Installers refuse to write through a symlinked `.cursor` or `.cursor/skills`
 
 ## 1.0.0 — 2026-07-27
 

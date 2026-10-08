@@ -43,6 +43,7 @@ Suite не обещает индексацию, цитирование, попа
 | `examples/` | Report format, dump antipattern, aio-lint fixtures |
 | `docs/replace-rank-math-llms.md` | Как заменить plugin dump на curated `/llms.txt` |
 | `docs/aio-lint.md` | CLI/CI AIO linter |
+| `docs/markdown-variants.md` | Публикация `.md`-вариантов страниц (опционально, на стороне сайта) |
 | `scripts/aio_lint.py` | SSRF-aware live/fixture linter (CLI, оценка, отчёт) |
 | `scripts/aio_net.py` | Проверенные https-запросы с привязкой к адресу |
 | `scripts/aio_html.py` | Линейный по времени разбор главной страницы / JSON-LD |

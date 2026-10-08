@@ -20,7 +20,8 @@ fixtures**.
 (`scripts/aio_net.py`). Limits: `https` only, port 443, globally routable
 addresses only (no localhost / private / link-local / CGNAT / special-purpose
 ranges), same-host redirects re-validated on every hop, body-size caps, and a
-per-socket plus whole-fetch timeout. Each connection is pinned to the address
+per-socket plus whole-fetch timeout (a watchdog also cuts off stalled response
+headers). Each connection is pinned to the address
 that was checked, so a second DNS answer cannot move it (DNS rebinding), and
 proxy environment variables are ignored. Page content is scanned in linear
 time with bounded windows (`scripts/aio_html.py`; no backtracking regular

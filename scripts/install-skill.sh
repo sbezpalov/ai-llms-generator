@@ -58,6 +58,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 TARGET_ABS="$(cd "$TARGET" && pwd -P)"
 SKILLS_ROOT="$TARGET_ABS/.cursor/skills"
 BACKUP_SUFFIX=".backup-$(date -u +%Y%m%dT%H%M%SZ)"
+# Never write through a link: it could point outside the target project.
+for link_candidate in "$TARGET_ABS/.cursor" "$SKILLS_ROOT"; do
+  if [[ -L "$link_candidate" ]]; then
+    echo "Refusing to install through a symlink: $link_candidate" >&2
+    exit 1
+  fi
+done
+
 SKILL_NAMES=(
   "generate-llms-txt"
   "audit-robots-ai-bots"

@@ -78,6 +78,11 @@ L2_STATUS = {
     # A 403/5xx says nothing about the file itself (WAFs often block linters).
     "unavailable": "weak",
 }
+# Opt-in link check (--check-links): same-origin links only, bounded.
+MAX_LINK_CHECKS = 25
+LINK_PROBE_BYTES = 4 * 1024
+MAX_BROKEN_LINKS_SHOWN = 3
+HTML_BODY_PREFIXES = ("<!doctype", "<html")
 MAX_TEXT_EVIDENCE_CHARS = 120
 MAX_URL_EVIDENCE_CHARS = 200
 MARKDOWN_ESCAPES = {
@@ -226,7 +231,55 @@ def score_l1(robots: FetchResult) -> LayerResult:
     )
 
 
-def score_l2(llms: FetchResult) -> LayerResult:
+def check_links(llms_body: str, *, origin_host: str, timeout: float) -> dict[str, Any]:
+    """Fetch the same-origin links of an llms.txt and report the ones that fail."""
+    links = list(dict.fromkeys(absolute_https_links(llms_body)))
+    same_origin = [
+        url for url in links if (urlparse(url).hostname or "").lower() == origin_host.lower()
+    ]
+    to_check = same_origin[:MAX_LINK_CHECKS]
+    markdown = set(markdown_variant_links(to_check))
+    broken: list[dict[str, str]] = []
+    not_markdown: list[str] = []
+    for url in to_check:
+        result = fetch_https(
+            url,
+            max_bytes=LINK_PROBE_BYTES,
+            timeout=timeout,
+            origin_host=origin_host,
+            truncate=True,
+        )
+        if result.error or result.status_code != 200:
+            broken.append({"url": url, "reason": result.error or f"HTTP {result.status_code}"})
+        elif url in markdown and (result.body or "").lstrip().lower().startswith(HTML_BODY_PREFIXES):
+            not_markdown.append(url)
+    return {
+        "checked": len(to_check),
+        "ok": len(to_check) - len(broken) - len(not_markdown),
+        "broken": broken,
+        "not_markdown": not_markdown,
+        "external_skipped": len(links) - len(same_origin),
+        "not_checked": len(same_origin) - len(to_check),
+    }
+
+
+def link_check_evidence(report: dict[str, Any]) -> list[str]:
+    summary = (
+        f"link_check: {report['ok']} ok, {len(report['broken'])} broken, "
+        f"{len(report['not_markdown'])} not markdown, "
+        f"{report['external_skipped']} external skipped"
+    )
+    if report["not_checked"]:
+        summary += f", {report['not_checked']} over the {MAX_LINK_CHECKS}-link limit"
+    shown = [
+        f"broken: {item['url']} ({item['reason']})"
+        for item in report["broken"][:MAX_BROKEN_LINKS_SHOWN]
+    ]
+    shown += [f"html served for .md link: {url}" for url in report["not_markdown"][:MAX_BROKEN_LINKS_SHOWN]]
+    return [summary, *shown]
+
+
+def score_l2(llms: FetchResult, link_report: dict[str, Any] | None = None) -> LayerResult:
     if llms.error:
         return LayerResult("fail", [f"llms.txt fetch error: {llms.error}"])
     classification = classify_llms(llms.body, status_code=llms.status_code)
@@ -260,7 +313,13 @@ def score_l2(llms: FetchResult) -> LayerResult:
                 "info: no .md link variants (llmstxt.org suggests them where the site publishes them)"
             )
 
-    return LayerResult(L2_STATUS[classification], evidence, details)
+    status = L2_STATUS[classification]
+    if link_report is not None and classification not in {"missing", "unavailable"}:
+        evidence.extend(link_check_evidence(link_report))
+        details["link_check"] = link_report
+        if status == "ok" and (link_report["broken"] or link_report["not_markdown"]):
+            status = "weak"
+    return LayerResult(status, evidence, details)
 
 
 def score_l3(html_fetch: FetchResult) -> LayerResult:
@@ -304,6 +363,9 @@ def build_actions(layers: dict[str, LayerResult]) -> list[str]:
             f"Find out why /llms.txt returns HTTP {layers['L2'].details.get('http_status')} "
             "(server error or bot blocking) and re-run."
         )
+    link_check = layers["L2"].details.get("link_check")
+    if link_check and (link_check["broken"] or link_check["not_markdown"]):
+        actions.append("Fix or remove the /llms.txt links that fail the link check.")
     if layers["L3"].status in {"fail", "weak"}:
         actions.append("Add factual JSON-LD (Organization/WebSite/Article) via /draft-json-ld.")
     if layers["L1"].status != "ok":
@@ -315,11 +377,16 @@ def build_actions(layers: dict[str, LayerResult]) -> list[str]:
     return actions[:5]
 
 
-def audit_from_fetches(target: str, mode: str, fetches: dict[str, FetchResult]) -> AuditReport:
+def audit_from_fetches(
+    target: str,
+    mode: str,
+    fetches: dict[str, FetchResult],
+    link_report: dict[str, Any] | None = None,
+) -> AuditReport:
     layers = {
         "L0": score_l0(fetches["html"]),
         "L1": score_l1(fetches["robots"]),
-        "L2": score_l2(fetches["llms"]),
+        "L2": score_l2(fetches["llms"], link_report),
         "L3": score_l3(fetches["html"]),
     }
     ok = all(layer.status != "fail" for layer in layers.values())
@@ -332,7 +399,7 @@ def audit_from_fetches(target: str, mode: str, fetches: dict[str, FetchResult]) 
     )
 
 
-def audit_live(url: str, timeout: float) -> AuditReport:
+def audit_live(url: str, timeout: float, *, with_link_check: bool = False) -> AuditReport:
     target = url if "://" in url else f"https://{url}"
     # Validate what the user typed, so credentials or a port are refused, not dropped.
     assert_safe_https_url(target)
@@ -348,7 +415,11 @@ def audit_live(url: str, timeout: float) -> AuditReport:
         )
         for kind, path in paths.items()
     }
-    return audit_from_fetches(origin + "/", "live", fetches)
+    llms = fetches["llms"]
+    link_report = None
+    if with_link_check and llms.status_code == 200 and llms.body:
+        link_report = check_links(llms.body, origin_host=host, timeout=timeout)
+    return audit_from_fetches(origin + "/", "live", fetches, link_report)
 
 
 def md_cell(value: str) -> str:
@@ -422,6 +493,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="exit 1 when overall ok is false (any layer status=fail)",
     )
+    parser.add_argument(
+        "--check-links",
+        action="store_true",
+        help=f"live mode: also fetch up to {MAX_LINK_CHECKS} same-origin llms.txt links",
+    )
     return parser.parse_args(argv)
 
 
@@ -429,6 +505,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         if args.fixture:
+            if args.check_links:
+                print("--check-links needs a live URL; fixtures are offline", file=sys.stderr)
+                return 2
             fixture_dir = args.fixture.resolve()
             if not fixture_dir.is_dir():
                 print(f"fixture directory not found: {fixture_dir}", file=sys.stderr)
@@ -439,7 +518,9 @@ def main(argv: list[str] | None = None) -> int:
                 load_fixture(fixture_dir),
             )
         else:
-            report = audit_live(args.url, timeout=args.timeout)
+            report = audit_live(
+                args.url, timeout=args.timeout, with_link_check=args.check_links
+            )
     except ValueError as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2

@@ -33,6 +33,15 @@ $Root = Split-Path -Parent $PSScriptRoot
 $SkillsRoot = Join-Path $ResolvedTarget.Path ".cursor/skills"
 $BackupSuffix = ".backup-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
 
+# Never write through a link: it could point outside the target project.
+foreach ($LinkCandidate in @((Join-Path $ResolvedTarget.Path ".cursor"), $SkillsRoot)) {
+    $LinkItem = Get-Item -LiteralPath $LinkCandidate -Force -ErrorAction SilentlyContinue
+    if ($null -ne $LinkItem -and
+        ($LinkItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+        throw "Refusing to install through a link: $LinkCandidate"
+    }
+}
+
 $Skills = @(
     [pscustomobject]@{
         Name = "generate-llms-txt"

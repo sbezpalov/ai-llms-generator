@@ -194,6 +194,7 @@ Deliver:
 4. Verification note: the user must confirm links and descriptions before deploy;
    state how many links use Markdown variants and, if none exist, that
    publishing them is an optional site-side improvement
+   ([docs/markdown-variants.md](docs/markdown-variants.md) in the repository)
 5. Optional next steps: `/draft-json-ld`, `/audit-robots-ai-bots`,
    `/aio-site-audit`
 

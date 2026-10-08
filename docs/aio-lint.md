@@ -21,7 +21,7 @@ report. See [SECURITY.md](../SECURITY.md) for known limitations.
 L2 also reports `markdown_links`: how many links point to `.md` page variants,
 which the llmstxt.org proposal suggests where a site publishes them. It is
 informational only — it never changes the L2 status, and the linter does not
-fetch the linked pages.
+fetch the linked pages unless `--check-links` is given.
 
 ## Usage
 
@@ -29,6 +29,7 @@ fetch the linked pages.
 # Live site (network)
 python scripts/aio_lint.py https://example.com
 python scripts/aio_lint.py https://example.com --json --strict
+python scripts/aio_lint.py https://example.com --check-links
 
 # Offline fixtures (CI)
 python scripts/aio_lint.py --fixture examples/aio-lint-fixtures/curated-site --expect-l2 curated
@@ -50,6 +51,12 @@ Status notes:
   linter was blocked). Link entries are recognised with `-`, `*` or `+`
   bullets; the 20-link / 12-per-section / 8 KB thresholds are project
   heuristics, not llmstxt.org rules.
+- **`--check-links`** (live mode, opt-in) fetches up to 25 same-origin links
+  from `llms.txt` and reports the ones that do not answer `200`, plus `.md`
+  links that answer with an HTML page (soft 404). Problems lower a `curated`
+  file to `weak`. Links to other hosts are counted but never fetched. It adds
+  one request per link, so expect a longer run. How to publish the variants:
+  [markdown-variants.md](markdown-variants.md).
 - The target may be an origin or any URL on it; only the origin is audited.
   Credentials and non-default ports are refused rather than dropped.
 

@@ -44,6 +44,7 @@ Audience: owners of blogs, docs, and corporate sites (AIO). Context:
 | `examples/` | Report format, dump antipattern, aio-lint fixtures |
 | `docs/replace-rank-math-llms.md` | Replace plugin dump with curated `/llms.txt` |
 | `docs/aio-lint.md` | CLI/CI AIO linter |
+| `docs/markdown-variants.md` | Publishing `.md` page variants (optional, site-side) |
 | `scripts/aio_lint.py` | SSRF-aware live/fixture linter (CLI, scoring, report) |
 | `scripts/aio_net.py` | Pinned, validated https fetching for the linter |
 | `scripts/aio_html.py` | Linear-time homepage signal / JSON-LD extraction |

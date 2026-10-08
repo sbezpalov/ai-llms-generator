@@ -7,6 +7,7 @@ import io
 import json
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import aio_lint
 from aio_net import FetchResult
@@ -129,6 +130,80 @@ class ScoreL2Tests(unittest.TestCase):
 
         self.assertTrue(any("HTTP 503" in action for action in report.top_actions))
         self.assertFalse(any("Create a curated" in action for action in report.top_actions))
+
+
+class CheckLinksTests(unittest.TestCase):
+    LLMS = (
+        "# S\n\n> d\n\n## Docs\n\n"
+        "- [Ok](https://site.example/ok/): fine\n"
+        "- [Gone](https://site.example/gone/): broken\n"
+        "- [Md](https://site.example/page.md): real markdown\n"
+        "- [Fake](https://site.example/fake.md): html in disguise\n"
+        "- [Ext](https://other.example/x): external\n"
+    )
+    RESPONSES = {
+        "https://site.example/ok/": (200, "<html>ok</html>"),
+        "https://site.example/gone/": (404, None),
+        "https://site.example/page.md": (200, "# Page\n\nText"),
+        "https://site.example/fake.md": (200, "  <!DOCTYPE html><html>Not found</html>"),
+    }
+
+    def check(self, body: str | None = None) -> dict:
+        requested: list[str] = []
+
+        def fake_fetch(url: str, **kwargs: object) -> FetchResult:
+            requested.append(url)
+            status, text = self.RESPONSES[url]
+            return FetchResult(url, status, text)
+
+        with mock.patch("aio_lint.fetch_https", fake_fetch):
+            report = aio_lint.check_links(body or self.LLMS, origin_host="site.example", timeout=1.0)
+        self.requested = requested
+        return report
+
+    def test_reports_broken_fake_markdown_and_external_links(self) -> None:
+        report = self.check()
+
+        self.assertEqual(report["checked"], 4)
+        self.assertEqual(report["ok"], 2)
+        self.assertEqual(report["broken"], [{"url": "https://site.example/gone/", "reason": "HTTP 404"}])
+        self.assertEqual(
+            report["not_markdown"], ["https://site.example/fake.md"]
+        )
+        self.assertEqual(report["external_skipped"], 1)
+        self.assertNotIn("https://other.example/x", self.requested)
+
+    def test_checks_a_bounded_number_of_links(self) -> None:
+        many = "## A\n" + "".join(
+            f"- [P{n}](https://site.example/ok/?n={n})\n" for n in range(aio_lint.MAX_LINK_CHECKS + 10)
+        )
+        with mock.patch.dict(self.RESPONSES, {
+            f"https://site.example/ok/?n={n}": (200, "ok") for n in range(aio_lint.MAX_LINK_CHECKS + 10)
+        }):
+            report = self.check(many)
+
+        self.assertEqual(report["checked"], aio_lint.MAX_LINK_CHECKS)
+        self.assertEqual(report["not_checked"], 10)
+
+    def test_problem_links_downgrade_a_curated_file(self) -> None:
+        llms = FetchResult("https://site.example/llms.txt", 200, self.LLMS)
+
+        layer = aio_lint.score_l2(llms, link_report=self.check())
+
+        self.assertEqual(layer.status, "weak")
+        self.assertTrue(any(item.startswith("link_check: 2 ok, 1 broken, 1 not markdown") for item in layer.evidence))
+        self.assertEqual(layer.details["link_check"]["external_skipped"], 1)
+
+    def test_clean_links_keep_a_curated_file_ok(self) -> None:
+        body = "# S\n\n> d\n\n## Docs\n\n- [Ok](https://site.example/ok/): fine\n"
+        llms = FetchResult("https://site.example/llms.txt", 200, body)
+
+        self.assertEqual(aio_lint.score_l2(llms, link_report=self.check(body)).status, "ok")
+
+    def test_fixture_mode_rejects_link_checks(self) -> None:
+        code, _ = run_cli("--fixture", str(FIXTURES / "curated-site"), "--check-links")
+
+        self.assertEqual(code, 2)
 
 
 class AuditLiveInputTests(unittest.TestCase):
