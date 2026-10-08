@@ -55,7 +55,7 @@ Ask only if missing:
 - [ ] Step 1: Inspect page (title, dates, author, FAQ blocks)
 - [ ] Step 2: Choose types from matrix
 - [ ] Step 3: Draft JSON-LD (valid JSON)
-- [ ] Step 4: Spot-check required properties
+- [ ] Step 4: Spot-check recommended properties and leftover TODO placeholders
 - [ ] Step 5: Deliver paste instructions for the user's stack
 ```
 

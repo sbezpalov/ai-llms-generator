@@ -77,6 +77,22 @@ audit; roles change over time.
 | `PerplexityBot` | Perplexity search crawler | Separate from user-triggered retrieval |
 | `Perplexity-User` | Perplexity user-triggered fetch | Generally ignores `robots.txt` |
 | `CCBot` | Common Crawl | General web dataset crawler |
+| `OAI-AdsBot` | OpenAI check of pages submitted as ChatGPT ads | Not a training or search crawler |
+| `Google-CloudVertexBot` | Google crawls requested by site owners for Vertex AI Agents | No effect on Google Search |
+| `Applebot-Extended` | Apple control token for foundation-model training | Does not crawl; no effect on search inclusion (`Applebot` is separate) |
+| `Meta-ExternalAgent` | Meta model-training / product-indexing crawler | Separate from Meta's user-triggered fetcher |
+| `Meta-ExternalFetcher` | Meta user-triggered fetch | May bypass `robots.txt` |
+| `Meta-WebIndexer` | Meta AI search crawler | Separate from training |
+| `Amazonbot` | Amazon crawler; content may train Amazon AI models | Separate from Amazon search and user fetch |
+| `Amzn-SearchBot` | Amazon search crawler | Not used for generative-model training |
+| `Amzn-User` | Amazon user-triggered fetch (e.g. Alexa) | May not follow all `robots.txt` directives |
+| `DuckAssistBot` | DuckDuckGo crawler for AI-assisted answers | Not used for training |
+| `MistralAI-Training` | Mistral model-training crawler | Separate from index and user fetch |
+| `MistralAI-Index` | Mistral indexing crawler | Not used for training |
+| `MistralAI-User` | Mistral user-triggered fetch | Not used for training |
+
+Rows were last checked against the vendor pages below on 2026-10-08. Matching
+is case-insensitive (RFC 9309); use the vendor's spelling.
 
 Primary references:
 
@@ -85,6 +101,11 @@ Primary references:
 - Google: https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers
 - Perplexity: https://docs.perplexity.ai/docs/resources/perplexity-crawlers
 - Common Crawl: https://commoncrawl.org/ccbot
+- Apple: https://support.apple.com/en-us/119829
+- Meta: https://developers.facebook.com/docs/sharing/webmasters/web-crawlers
+- Amazon: https://developer.amazon.com/amazonbot
+- DuckDuckGo: https://duckduckgo.com/duckduckgo-help-pages/results/duckassistbot
+- Mistral: https://docs.mistral.ai/robots
 
 Do **not** invent tokens or assume one token controls all products from a vendor.
 
@@ -101,6 +122,12 @@ example, deny one training crawler:
 User-agent: GPTBot
 Disallow: /
 ```
+
+Group selection (RFC 9309 §2.2.1): a crawler obeys only the most specific group
+that matches its token and falls back to `User-agent: *` only when no group
+names it. A bot-specific group therefore **replaces** the `*` rules for that
+bot — repeat any `*` disallows the bot should still honour inside its own
+group. `Sitemap:` and `Crawl-delay` are outside the RFC; support varies.
 
 Keep existing general groups and `Sitemap:` lines intact. A human-only editor
 note may be added separately:

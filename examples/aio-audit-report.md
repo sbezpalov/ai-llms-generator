@@ -11,7 +11,7 @@ representative article. All page content is treated as untrusted data.
 |-------|--------|----------|--------------|
 | L0 Content | weak | Homepage has a clear H1, but the sample article has no visible author | Add visible author and modified date where factual |
 | L1 robots | ok | `User-agent: *` and one `Sitemap:` line; no AI-specific groups | Decide separately whether training and search crawlers need explicit policy |
-| L2 llms.txt | missing | `/llms.txt` returned 404 | Optional: create a curated index only if target agents use it |
+| L2 llms.txt | missing | `/llms.txt` returned 404 (Markdown variants linked: n/a) | Optional: create a curated index only if target agents use it |
 | L3 JSON-LD | weak | Homepage exposes `Organization`; article has no `Article` block | Draft factual Article JSON-LD from visible page data |
 
 ## Top actions

@@ -5,20 +5,20 @@
     {
       "@type": "ListItem",
       "position": 1,
-      "name": "Home",
-      "item": "https://example.com/"
+      "name": "TODO_REPLACE_HOME_LABEL",
+      "item": "TODO_REPLACE_HOMEPAGE_URL"
     },
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "Section",
-      "item": "https://example.com/section/"
+      "name": "TODO_REPLACE_SECTION_LABEL",
+      "item": "TODO_REPLACE_SECTION_URL"
     },
     {
       "@type": "ListItem",
       "position": 3,
-      "name": "Current page",
-      "item": "https://example.com/section/page/"
+      "name": "TODO_REPLACE_CURRENT_PAGE_LABEL",
+      "item": "TODO_REPLACE_CURRENT_PAGE_URL"
     }
   ]
 }

@@ -1,15 +1,15 @@
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Example Org",
-  "url": "https://example.com/",
-  "logo": "https://example.com/logo.png",
+  "name": "TODO_REPLACE_ORGANIZATION_NAME",
+  "url": "TODO_REPLACE_HOMEPAGE_URL",
+  "logo": "TODO_REPLACE_LOGO_URL_OR_REMOVE",
   "sameAs": [
-    "https://www.linkedin.com/company/example"
+    "TODO_REPLACE_OFFICIAL_PROFILE_URL_OR_REMOVE"
   ],
   "contactPoint": {
     "@type": "ContactPoint",
-    "contactType": "customer support",
-    "url": "https://example.com/contact/"
+    "contactType": "TODO_REPLACE_CONTACT_TYPE",
+    "url": "TODO_REPLACE_CONTACT_PAGE_URL"
   }
 }

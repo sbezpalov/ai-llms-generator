@@ -4,10 +4,10 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Example question?",
+      "name": "TODO_REPLACE_QUESTION_VISIBLE_ON_PAGE",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Factual answer in plain language."
+        "text": "TODO_REPLACE_ANSWER_VISIBLE_ON_PAGE"
       }
     }
   ]

@@ -79,10 +79,16 @@ If policy changes are needed, recommend `/audit-robots-ai-bots`.
 
 ### L2 — llms.txt
 
-- Fetch `/llms.txt` (404 = missing)
-- Classify: **missing** | **curated** | **bulk dump** (plugin/sitemap-like)
+- Fetch `/llms.txt` (404/410 = missing; any other non-200 = **unavailable** —
+  report the status, do not judge the error page)
+- Classify: **missing** | **unavailable** | **empty** | **malformed** (no H1,
+  summary, or H2 sections) | **curated** | **bulk dump** (plugin/sitemap-like)
 - Bulk dump = recommend curated rewrite via `/generate-llms-txt`
 - Check approximate size (warn if huge) and absolute https links
+- Note how many links point to Markdown page variants (`.md`). Informational
+  only: it is not scored, and a site that publishes no such variants is fine
+- The proposal also allows a file at a subpath (e.g. `/docs/llms.txt`) that
+  covers that path; mention one if the site links to it, but audit the root file
 
 ### L3 — Schema.org
 
@@ -98,14 +104,16 @@ Present a compact table:
 |-------|--------|----------|--------------|
 | L0 Content | ok / weak / fail | … | … |
 | L1 robots | … | … | … |
-| L2 llms.txt | missing / curated / dump | … | … |
+| L2 llms.txt | missing / unavailable / empty / malformed / curated / dump | … | … |
 | L3 JSON-LD | … | … | … |
 
 Then **top 3 actions** in order of evidence-backed impact. Do not automatically
 rank a missing `llms.txt` above crawlability, content quality, or factual
 structured data. Offer the explicit specialist commands next.
 
-For a machine-checkable score from this repo:
+For a machine-checkable score, run the linter from a clone of the
+[ai-llms-generator](https://github.com/sbezpalov/ai-llms-generator) repository
+(the skill installer does not copy `scripts/`):
 
 ```text
 python scripts/aio_lint.py https://example.com --json --strict

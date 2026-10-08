@@ -14,7 +14,7 @@ drafts.
 > `llms.txt` is an **emerging convention**, not an IETF/W3C standard.
 > A curated map is not a dump of every URL from an SEO plugin.
 
-The suite does not guarantee crawling, citations, AI-answer inclusion, or
+The suite does not guarantee indexing, citations, AI-answer inclusion, or
 rankings. Product support for `llms.txt` varies; Google Search
 [does not use it](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
 for Search or its generative AI features. `robots.txt` is a voluntary crawler
