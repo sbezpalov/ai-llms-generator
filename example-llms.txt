@@ -2,29 +2,36 @@
 
 > ИТ live журнал Сергея Безпалова
 
-Технический блог о корпоративной ИТ-инфраструктуре: Microsoft (Exchange, Lync/Skype for Business, OCS), унифицированные коммуникации (Cisco, Avaya, Polycom, WebEx, 3CX), сети, безопасность, виртуализация и облака. Автор — Sergey Bezpalov, Senior Solutions Architect (20+ лет в DC, гибридных облаках, сетях, безопасности и UC, регион EMEA). Посты публикуются на русском (канонично), часть — с английской адаптацией.
+Технический блог о корпоративной ИТ-инфраструктуре: Microsoft (Exchange, Lync/Skype for Business, OCS), унифицированные коммуникации (Cisco, Avaya, Polycom, WebEx, 3CX), сети, безопасность, виртуализация и облака. Автор — Sergey Bezpalov, Senior Solutions Architect (20+ лет в DC, гибридных облаках, сетях, безопасности и UC, регион EMEA). Посты публикуются на русском (канонично), часть — с английской адаптацией. Здесь — избранные материалы; полный список страниц — в sitemap.
 
-Last updated: 2026-07-27
+Last updated: 2026-10-08
 
-## Quick Tip
+## AI
 
-- [Как оптимизировать сайт и блог под AI](https://blog.bezpalov.com/optimize-site-for-ai/): Практический разбор robots.txt, курированного llms.txt и фактической Schema.org-разметки.
+- [Как оптимизировать сайт и блог под AI](https://blog.bezpalov.com/optimize-site-for-ai/): Три слоя — robots.txt, курированный llms.txt и Schema.org; роли AI-ботов и Markdown-версии страниц.
+- [How to Optimize Your Website and Blog for AI](https://blog.bezpalov.com/optimize-site-for-ai-en/): English adaptation: robots.txt, curated llms.txt, Schema.org, AI bot roles.
 - [AI Tooling Starter Kit](https://blog.bezpalov.com/ai-tooling-starter-kit/): Открытый каркас AGENTS.md для Cursor, Claude, Antigravity/Gemini и Perplexity.
+- [Чей это код на самом деле?](https://blog.bezpalov.com/ai-code-legal-status/): Copyright и AI-output: три сценария риска и что фиксировать в политике.
+- [Исчезнут ли интерфейсы? Как ИИ-агенты меняют UX разработки](https://blog.bezpalov.com/ai-agents-ui-transformation/): От кнопок и меню к оркестрации агентов: тренды, кейсы, аргументы за и против.
 
-## Microsoft
+## Security & Networks
 
+- [Easy Home WAF](https://blog.bezpalov.com/easy-home-waf/): Self-hosted reverse proxy на HAProxy с WAF, CrowdSec, GeoIP и ACME для домашних сервисов.
 - [Многофакторная авторизация Azure в среде Cisco и FortiGate](https://blog.bezpalov.com/azure-mfa-cisco-fortigate/): Runbook: VPN на FortiGate с RADIUS через Cisco ISE, Microsoft NPS и Azure MFA.
+- [Безопасный Telegram](https://blog.bezpalov.com/telegram-security/): Модель угроз, настройки, которые реально работают, и сравнение с Signal и WhatsApp.
+- [Как смартфоны понимают, что Wi-Fi требует авторизации](https://blog.bezpalov.com/wifi-captive-portal-detection/): Разбор механизма Captive Portal.
+- [Видеонаблюдение в частном доме](https://blog.bezpalov.com/home-cctv-hikvision-trassir/): Проект на Hikvision и Trassir: камеры, VLAN, PoE-бюджет, сигнализация AX Pro.
 
 ## Unified Communications
 
-- [Сброс настроек телефонов Snom](https://blog.bezpalov.com/snom-factory-reset/): Factory reset Snom через Rescue Mode — пошагово.
-- [3CX AI Edition](https://blog.bezpalov.com/3cx-ai-edition/): Обзор редакции 3CX Enterprise/AI: агенты, транскрипция, интеграции и пробелы.
+- [3CX AI Edition](https://blog.bezpalov.com/3cx-ai-edition/): Обзор 3CX Enterprise/AI: ИИ-агенты, локальный AI Server, MCP-сервер и незакрытые пробелы.
+- [Интеграция 3CX и Cisco Communication Manager](https://blog.bezpalov.com/3cx-cisco-cucm-integration/)
+- [Сброс настроек телефонов Snom](https://blog.bezpalov.com/snom-factory-reset/): Factory reset Snom D3xx/D7xx/7xx/MP через Rescue Mode — пошагово.
 
-## Ops & Security
+## Quick Tip
 
+- [Конвертация PFX-сертификата в CRT и KEY](https://blog.bezpalov.com/pfx-to-crt-key/): Сертификат и приватный ключ из PKCS#12 через OpenSSL — для nginx и Apache.
 - [Как использовать прокси в CentOS / RHEL](https://blog.bezpalov.com/centos-proxy/): Системный HTTP/HTTPS/FTP proxy для shell, dnf, curl и wget.
-- [Безопасный Telegram](https://blog.bezpalov.com/telegram-security/): Модель угроз, настройки и сравнение с Signal/WhatsApp.
-- [Чей это код на самом деле?](https://blog.bezpalov.com/ai-code-legal-status/): Copyright и AI-output: три сценария риска и что фиксировать в политике.
 
 ## About
 
@@ -33,5 +40,5 @@ Last updated: 2026-07-27
 
 ## Optional
 
-- [ai-llms-generator (репозиторий)](https://github.com/sbezpalov/ai-llms-generator): MIT AIO skill suite — curated llms.txt, robots AI policy, JSON-LD drafts.
+- [ai-llms-generator (репозиторий)](https://github.com/sbezpalov/ai-llms-generator): MIT AIO skill suite — curated llms.txt, robots AI policy, JSON-LD drafts, aio-lint.
 - [AI Tooling Starter Kit (репозиторий)](https://github.com/sbezpalov/ai-tooling-starter-kit): Исходники каркаса AGENTS.md вне блога.

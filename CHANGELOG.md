@@ -26,6 +26,8 @@ The project uses semantic versioning for public releases.
   `example.com` reach published JSON-LD
 - `aio-site-audit`: L2 statuses match the linter, Markdown variants are noted,
   and the linter command is documented as run from a repository clone
+- `example-llms.txt` refreshed to the blog's current curated file (19 links,
+  AI section, October 2026)
 - `PROMPT.en.md` (named in 0.1.0) is now `PROMPT.md`; the Russian prompt is
   `PROMPT.ru.md`
 
